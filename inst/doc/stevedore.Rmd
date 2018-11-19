@@ -1,0 +1,3065 @@
+---
+title: "Using docker with stevedore"
+author: "Rich FitzJohn"
+date: "2018-11-08"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using docker with stevedore}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+`stevedore` is an R package for interacting with docker from R.
+With `stevedore` you can
+
+* create, run, manage, remove and destroy containers
+* build, pull, manage and remove images
+* create, destroy and interact with docker networks
+* create, destroy and interact with docker volumes
+
+Almost everything that can be done with the docker command line
+client (the main exception being that is not possible to send input
+to a container as if you were on a terminal).
+
+`stevedore` directly interacts with the docker server over its HTTP
+API.  This gives a more direct access to docker than going via the
+command line.
+
+This vignette quickly walks through the core features of the
+package.  Because `stevedore` wraps the docker API directly there
+are many more arguments that can be used than are covered here.
+But this covers the core use.
+
+
+
+
+
+
+The main function in the package is `docker_client`; this will
+construct an object with which we can talk with the docker server.
+By default this will look at a number of environment variables and
+try to connect to the correct daemon.  See `?docker_client` for
+information on controlling creating the connection.
+
+```r
+docker <- stevedore::docker_client()
+```
+
+The client object looks a lot like an
+[`R6`](https://github.com/wch/R6) object (though it is implemented
+differently because the interface here is automatically generated
+in ways that don't play nicely with R6).  But if you are at all
+familiar with R6 objects it should seem quite familiar.
+
+```r
+docker
+```
+
+```
+## <docker_client>
+##   config: Manage docker swarm configs
+##   container: Work with docker containers
+##   image: Work with docker images
+##   network: Work with docker networks
+##   node: Manage docker swarm nodes
+##   plugin: Work with docker plugins
+##   secret: Manage docker swarm secrets
+##   service: Work with docker services
+##   swarm: Manage the docker swarm
+##   task: Work with docker tasks
+##   volume: Work with docker volumes
+##   types: Methods for building complex docker types
+##   api_version()
+##   connection_info()
+##   cp(src, dest)
+##   df()
+##   events(since = NULL, until = NULL, filters = NULL)
+##   help(help_type = getOption("help_type"))
+##   info()
+##   login(username = NULL, password = NULL, email = NULL,
+##       serveraddress = NULL)
+##   ping()
+##   request(verb, path, query = NULL, body = NULL, headers = NULL,
+##       stream = NULL)
+##   version()
+```
+
+Each function call (e.g., `ping`) is callable by accessing with
+`$`, such as
+
+```r
+docker$ping()
+```
+
+```
+## [1] "OK"
+## attr(,"api_version")
+## [1] "1.37"
+## attr(,"docker_experimental")
+## [1] TRUE
+```
+
+In addition there are "collection" objects (e.g., `container`)
+that are accessed using `$`, like a directory structure
+
+```r
+docker$container
+```
+
+```
+## <docker_container_collection>
+##   create(image, cmd = NULL, hostname = NULL, domainname = NULL,
+##       user = NULL, attach_stdin = NULL, attach_stdout = NULL,
+##       attach_stderr = NULL, ports = NULL, tty = NULL,
+##       open_stdin = NULL, stdin_once = NULL, env = NULL,
+##       health_check = NULL, args_escaped = NULL, volumes = NULL,
+##       working_dir = NULL, entrypoint = NULL, network_disabled = NULL,
+##       mac_address = NULL, on_build = NULL, labels = NULL,
+##       stop_signal = NULL, stop_timeout = NULL, shell = NULL,
+##       host_config = NULL, network = NULL, name = NULL)
+##   get(id)
+##   help(help_type = getOption("help_type"))
+##   list(all = NULL, limit = NULL, size = NULL, filters = NULL)
+##   prune(filters = NULL)
+##   remove(id, delete_volumes = NULL, force = NULL, link = NULL)
+##   run(image, cmd = NULL, ..., detach = FALSE, rm = FALSE,
+##       stream = stdout(), host_config = NULL)
+```
+
+The interface is designed similarly to the command line docker
+client (and to the Python docker client), where container commands
+are within the `container` collection and image commands are within
+the `image` collection and so on (the main difference with the
+command line client is that the container commands are not at the
+top level, so it is `docker$container$run(...)` not
+`docker$run(...)`).
+
+To run a container, the `docker$container$run` command follows the
+semantics of the command line client and will
+
+* pull a image if it does not exist
+* create the container
+* run the container
+* fetch the logs
+
+```r
+res <- docker$container$run("hello-world")
+```
+
+```
+## O>
+## O> Hello from Docker!
+## O> This message shows that your installation appears to be working correctly.
+## O>
+## O> To generate this message, Docker took the following steps:
+## O>  1. The Docker client contacted the Docker daemon.
+## O>  2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+## O>     (amd64)
+## O>  3. The Docker daemon created a new container from that image which runs the
+## O>     executable that produces the output you are currently reading.
+## O>  4. The Docker daemon streamed that output to the Docker client, which sent it
+## O>     to your terminal.
+## O>
+## O> To try something more ambitious, you can run an Ubuntu container with:
+## O>  $ docker run -it ubuntu bash
+## O>
+## O> Share images, automate workflows, and more with a free Docker ID:
+## O>  https://hub.docker.com/
+## O>
+## O> For more examples and ideas, visit:
+## O>  https://docs.docker.com/get-started/
+## O>
+```
+
+This returns a list with two elements:
+
+```r
+names(res)
+```
+
+```
+## [1] "container" "logs"
+```
+
+The "logs" element is the logs themselves:
+
+```r
+res$logs
+```
+
+```
+## O>
+## O> Hello from Docker!
+## O> This message shows that your installation appears to be working correctly.
+## O>
+## O> To generate this message, Docker took the following steps:
+## O>  1. The Docker client contacted the Docker daemon.
+## O>  2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+## O>     (amd64)
+## O>  3. The Docker daemon created a new container from that image which runs the
+## O>     executable that produces the output you are currently reading.
+## O>  4. The Docker daemon streamed that output to the Docker client, which sent it
+## O>     to your terminal.
+## O>
+## O> To try something more ambitious, you can run an Ubuntu container with:
+## O>  $ docker run -it ubuntu bash
+## O>
+## O> Share images, automate workflows, and more with a free Docker ID:
+## O>  https://hub.docker.com/
+## O>
+## O> For more examples and ideas, visit:
+## O>  https://docs.docker.com/get-started/
+## O>
+```
+
+This is a `docker_stream` object and codes the output stream using
+the `stream` attribute (it can otherwise be treated as a character
+vector).
+
+The "container" element is an object that can be used to interact
+with a container
+
+```r
+res$container
+```
+
+```
+## <docker_container>
+##   commit(repo = NULL, tag = NULL, author = NULL, changes = NULL,
+##       comment = NULL, pause = NULL, hostname = NULL, domainname = NULL,
+##       user = NULL, attach_stdin = NULL, attach_stdout = NULL,
+##       attach_stderr = NULL, exposed_ports = NULL, tty = NULL,
+##       open_stdin = NULL, stdin_once = NULL, env = NULL, cmd = NULL,
+##       healthcheck = NULL, args_escaped = NULL, image = NULL,
+##       volumes = NULL, working_dir = NULL, entrypoint = NULL,
+##       network_disabled = NULL, mac_address = NULL, on_build = NULL,
+##       labels = NULL, stop_signal = NULL, stop_timeout = NULL,
+##       shell = NULL)
+##   cp_in(src, dest)
+##   cp_out(src, dest)
+##   diff()
+##   exec(cmd, stdin = NULL, stdout = TRUE, stderr = TRUE,
+##       detach_keys = NULL, tty = NULL, env = NULL, privileged = NULL,
+##       user = NULL, working_dir = NULL, detach = FALSE,
+##       stream = stdout())
+##   exec_create(cmd, stdin = NULL, stdout = TRUE, stderr = TRUE,
+##       detach_keys = NULL, tty = NULL, env = NULL, privileged = NULL,
+##       user = NULL, working_dir = NULL)
+##   export()
+##   get_archive(path, dest)
+##   help(help_type = getOption("help_type"))
+##   id()
+##   image()
+##   inspect(reload = TRUE)
+##   kill(signal = NULL)
+##   labels(reload = TRUE)
+##   logs(follow = NULL, stdout = TRUE, stderr = TRUE, since = NULL,
+##       until = NULL, timestamps = NULL, tail = NULL, stream = stdout())
+##   name()
+##   path_stat(path)
+##   pause()
+##   ports(reload = TRUE)
+##   put_archive(src, path, no_overwrite_dir_non_dir = NULL)
+##   reload()
+##   remove(delete_volumes = NULL, force = NULL, link = NULL)
+##   rename(name)
+##   resize(h = NULL, w = NULL)
+##   restart(t = NULL)
+##   start(detach_keys = NULL)
+##   stats()
+##   status(reload = TRUE)
+##   stop(t = NULL)
+##   top(ps_args = NULL)
+##   unpause()
+##   update(cpu_shares = NULL, memory = NULL, cgroup_parent = NULL,
+##       blkio_weight = NULL, blkio_weight_device = NULL,
+##       blkio_device_read_bps = NULL, blkio_device_write_bps = NULL,
+##       blkio_device_read_iops = NULL, blkio_device_write_iops = NULL,
+##       cpu_period = NULL, cpu_quota = NULL, cpu_realtime_period = NULL,
+##       cpu_realtime_runtime = NULL, cpuset_cpus = NULL,
+##       cpuset_mems = NULL, devices = NULL, device_cgroup_rules = NULL,
+##       disk_quota = NULL, kernel_memory = NULL,
+##       memory_reservation = NULL, memory_swap = NULL,
+##       memory_swappiness = NULL, nano_cpus = NULL,
+##       oom_kill_disable = NULL, init = NULL, pids_limit = NULL,
+##       ulimits = NULL, cpu_count = NULL, cpu_percent = NULL,
+##       io_maximum_iops = NULL, io_maximum_bandwidth = NULL,
+##       restart_policy = NULL)
+##   wait(condition = NULL)
+```
+
+For example the function `path_stat` gets some information about
+paths on the container:
+
+```r
+res$container$path_stat("hello")
+```
+
+```
+## $name
+## [1] "hello"
+##
+## $size
+## [1] 1840
+##
+## $mode
+## [1] 509
+##
+## $mtime
+## [1] "2018-09-07T19:25:35Z"
+##
+## $linkTarget
+## [1] ""
+```
+
+The image can also be returned
+
+```r
+img <- res$container$image()
+img
+```
+
+```
+## <docker_image>
+##   export()
+##   help(help_type = getOption("help_type"))
+##   history()
+##   id()
+##   inspect(reload = TRUE)
+##   labels(reload = TRUE)
+##   name()
+##   reload()
+##   remove(force = NULL, noprune = NULL)
+##   short_id()
+##   tag(repo, tag = NULL)
+##   tags(reload = TRUE)
+##   untag(repo_tag)
+```
+
+which is another object with methods that can be invoked to find
+out about the image, e.g.:
+
+```r
+img$history()
+```
+
+```
+##                                                                        id
+## 1 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+## 2                                                               <missing>
+##      created
+## 1 1536348339
+## 2 1536348339
+##                                                                                           created_by
+## 1                                                                  /bin/sh -c #(nop)  CMD ["/hello"]
+## 2 /bin/sh -c #(nop) COPY file:9824c33ef192ac944822908370af9f04ab049bfa5c10724e4f727206f5167094 in /
+##           tags size comment
+## 1 hello-wo....    0
+## 2              1840
+```
+
+## Containers
+
+The `$container` object includes methods for interacting with
+containers:
+
+```r
+docker$container
+```
+
+```
+## <docker_container_collection>
+##   create(image, cmd = NULL, hostname = NULL, domainname = NULL,
+##       user = NULL, attach_stdin = NULL, attach_stdout = NULL,
+##       attach_stderr = NULL, ports = NULL, tty = NULL,
+##       open_stdin = NULL, stdin_once = NULL, env = NULL,
+##       health_check = NULL, args_escaped = NULL, volumes = NULL,
+##       working_dir = NULL, entrypoint = NULL, network_disabled = NULL,
+##       mac_address = NULL, on_build = NULL, labels = NULL,
+##       stop_signal = NULL, stop_timeout = NULL, shell = NULL,
+##       host_config = NULL, network = NULL, name = NULL)
+##   get(id)
+##   help(help_type = getOption("help_type"))
+##   list(all = NULL, limit = NULL, size = NULL, filters = NULL)
+##   prune(filters = NULL)
+##   remove(id, delete_volumes = NULL, force = NULL, link = NULL)
+##   run(image, cmd = NULL, ..., detach = FALSE, rm = FALSE,
+##       stream = stdout(), host_config = NULL)
+```
+
+`$create` creates a new container (similar to `docker container
+create` on the command line) but does not start it.
+
+```r
+x <- docker$container$create("hello-world", name = "hello-stevedore")
+x
+```
+
+```
+## <docker_container>
+##   commit(repo = NULL, tag = NULL, author = NULL, changes = NULL,
+##       comment = NULL, pause = NULL, hostname = NULL, domainname = NULL,
+##       user = NULL, attach_stdin = NULL, attach_stdout = NULL,
+##       attach_stderr = NULL, exposed_ports = NULL, tty = NULL,
+##       open_stdin = NULL, stdin_once = NULL, env = NULL, cmd = NULL,
+##       healthcheck = NULL, args_escaped = NULL, image = NULL,
+##       volumes = NULL, working_dir = NULL, entrypoint = NULL,
+##       network_disabled = NULL, mac_address = NULL, on_build = NULL,
+##       labels = NULL, stop_signal = NULL, stop_timeout = NULL,
+##       shell = NULL)
+##   cp_in(src, dest)
+##   cp_out(src, dest)
+##   diff()
+##   exec(cmd, stdin = NULL, stdout = TRUE, stderr = TRUE,
+##       detach_keys = NULL, tty = NULL, env = NULL, privileged = NULL,
+##       user = NULL, working_dir = NULL, detach = FALSE,
+##       stream = stdout())
+##   exec_create(cmd, stdin = NULL, stdout = TRUE, stderr = TRUE,
+##       detach_keys = NULL, tty = NULL, env = NULL, privileged = NULL,
+##       user = NULL, working_dir = NULL)
+##   export()
+##   get_archive(path, dest)
+##   help(help_type = getOption("help_type"))
+##   id()
+##   image()
+##   inspect(reload = TRUE)
+##   kill(signal = NULL)
+##   labels(reload = TRUE)
+##   logs(follow = NULL, stdout = TRUE, stderr = TRUE, since = NULL,
+##       until = NULL, timestamps = NULL, tail = NULL, stream = stdout())
+##   name()
+##   path_stat(path)
+##   pause()
+##   ports(reload = TRUE)
+##   put_archive(src, path, no_overwrite_dir_non_dir = NULL)
+##   reload()
+##   remove(delete_volumes = NULL, force = NULL, link = NULL)
+##   rename(name)
+##   resize(h = NULL, w = NULL)
+##   restart(t = NULL)
+##   start(detach_keys = NULL)
+##   stats()
+##   status(reload = TRUE)
+##   stop(t = NULL)
+##   top(ps_args = NULL)
+##   unpause()
+##   update(cpu_shares = NULL, memory = NULL, cgroup_parent = NULL,
+##       blkio_weight = NULL, blkio_weight_device = NULL,
+##       blkio_device_read_bps = NULL, blkio_device_write_bps = NULL,
+##       blkio_device_read_iops = NULL, blkio_device_write_iops = NULL,
+##       cpu_period = NULL, cpu_quota = NULL, cpu_realtime_period = NULL,
+##       cpu_realtime_runtime = NULL, cpuset_cpus = NULL,
+##       cpuset_mems = NULL, devices = NULL, device_cgroup_rules = NULL,
+##       disk_quota = NULL, kernel_memory = NULL,
+##       memory_reservation = NULL, memory_swap = NULL,
+##       memory_swappiness = NULL, nano_cpus = NULL,
+##       oom_kill_disable = NULL, init = NULL, pids_limit = NULL,
+##       ulimits = NULL, cpu_count = NULL, cpu_percent = NULL,
+##       io_maximum_iops = NULL, io_maximum_bandwidth = NULL,
+##       restart_policy = NULL)
+##   wait(condition = NULL)
+```
+
+`$get` creates a `docker_container` object from an container id or
+name:
+
+```r
+y <- docker$container$get("hello-stevedore")
+x$id()
+```
+
+```
+## [1] "5254c58774a8687c9d7faddf5c2b1de03007701dc961959e432c5018e2f17a84"
+```
+
+```r
+y$id()
+```
+
+```
+## [1] "5254c58774a8687c9d7faddf5c2b1de03007701dc961959e432c5018e2f17a84"
+```
+
+`$list()` lists containers (like `docker list` on the command line)
+- by default showing only running containers
+
+```r
+docker$container$list()
+```
+
+```
+##  [1] id               names            image            image_id
+##  [5] command          created          ports            size_rw
+##  [9] size_root_fs     labels           state            status
+## [13] host_config      network_settings mounts           name
+## <0 rows> (or 0-length row.names)
+```
+
+```r
+docker$container$list(all = TRUE, limit = 2)
+```
+
+```
+##                                                                 id
+## 1 5254c58774a8687c9d7faddf5c2b1de03007701dc961959e432c5018e2f17a84
+## 2 50f42ded4f3e99a62ed063053a903bfe31b885df1a0da2381daa3519b98e2021
+##          names
+## 1 hello-st....
+## 2 festive_....
+##                                                                     image
+## 1                                                             hello-world
+## 2 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+##                                                                  image_id
+## 1 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+## 2 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+##   command    created        ports size_rw size_root_fs labels   state
+## 1  /hello 1541671085 characte....      NA           NA        created
+## 2  /hello 1541671084 characte....      NA           NA         exited
+##                              status host_config network_settings
+## 1                           Created     default     list(bri....
+## 2 Exited (0) Less than a second ago     default     list(bri....
+##         mounts            name
+## 1 characte.... hello-stevedore
+## 2 characte....   festive_nobel
+```
+
+`$remove()` removes a container by name or id:
+
+```r
+docker$container$remove("hello-stevedore")
+```
+
+```
+## NULL
+```
+
+`$prune()` removes non-running containers (i.e., containers that
+have exited or containers that have been created but not yet
+started)
+
+```r
+docker$container$prune()
+```
+
+```
+## $containers_deleted
+## [1] "50f42ded4f3e99a62ed063053a903bfe31b885df1a0da2381daa3519b98e2021"
+##
+## $space_reclaimed
+## [1] 0
+```
+
+### Working with containers
+
+After creating a container object, there are many more methods to
+use - all apply to the individual container
+
+```r
+x <- docker$container$create("richfitz/iterate", c("1000", "1"))
+```
+
+Most are analogues of similarly named `docker` command line
+functions.
+
+First, there are some basic query methods - `$id()`, `$name()` and
+`$labels()`
+
+```r
+x$id()
+```
+
+```
+## [1] "eff11ac84d9e5645e2d7735f395244ad8eecd836501a8b1b12b8ae181be6ba03"
+```
+
+```r
+x$name()
+```
+
+```
+## [1] "elastic_leakey"
+```
+
+```r
+x$labels()
+```
+
+```
+## stevedore_version
+##           "0.0.1"
+```
+
+More detailed information (**much** more detailed) can be retrieved
+with the `$inspect()` method
+
+```r
+x$inspect()
+```
+
+```
+## $id
+## [1] "eff11ac84d9e5645e2d7735f395244ad8eecd836501a8b1b12b8ae181be6ba03"
+##
+## $created
+## [1] "2018-11-08T09:58:05.7154705Z"
+##
+## $path
+## [1] "/usr/local/bin/iterate"
+##
+## $args
+## [1] "1000" "1"
+##
+## $state
+## $state$status
+## [1] "created"
+##
+## $state$running
+## [1] FALSE
+##
+## $state$paused
+## [1] FALSE
+##
+## $state$restarting
+## [1] FALSE
+##
+## $state$oom_killed
+## [1] FALSE
+##
+## $state$dead
+## [1] FALSE
+##
+## $state$pid
+## [1] 0
+##
+## $state$exit_code
+## [1] 0
+##
+## $state$error
+## [1] ""
+##
+## $state$started_at
+## [1] "0001-01-01T00:00:00Z"
+##
+## $state$finished_at
+## [1] "0001-01-01T00:00:00Z"
+##
+##
+## $image
+## [1] "sha256:c3bca7c53b2e367ad0ceef5b94d2a02bbb21f881a49c3032165d6c85a8c71d23"
+##
+## $resolv_conf_path
+## [1] ""
+##
+## $hostname_path
+## [1] ""
+##
+## $hosts_path
+## [1] ""
+##
+## $log_path
+## [1] ""
+##
+## $node
+## NULL
+##
+## $name
+## [1] "/elastic_leakey"
+##
+## $restart_count
+## [1] 0
+##
+## $driver
+## [1] "overlay2"
+##
+## $mount_label
+## [1] ""
+##
+## $process_label
+## [1] ""
+##
+## $app_armor_profile
+## [1] ""
+##
+## $exec_ids
+## [1] NA
+##
+## $host_config
+## $host_config$cpu_shares
+## [1] 0
+##
+## $host_config$memory
+## [1] 0
+##
+## $host_config$cgroup_parent
+## [1] ""
+##
+## $host_config$blkio_weight
+## [1] 0
+##
+## $host_config$blkio_weight_device
+## [1] path   weight
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$blkio_device_read_bps
+## [1] path rate
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$blkio_device_write_bps
+## [1] path rate
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$blkio_device_read_iops
+## [1] path rate
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$blkio_device_write_iops
+## [1] path rate
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$cpu_period
+## [1] 0
+##
+## $host_config$cpu_quota
+## [1] 0
+##
+## $host_config$cpu_realtime_period
+## [1] 0
+##
+## $host_config$cpu_realtime_runtime
+## [1] 0
+##
+## $host_config$cpuset_cpus
+## [1] ""
+##
+## $host_config$cpuset_mems
+## [1] ""
+##
+## $host_config$devices
+## [1] path_on_host       path_in_container  cgroup_permissions
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$device_cgroup_rules
+## character(0)
+##
+## $host_config$disk_quota
+## [1] 0
+##
+## $host_config$kernel_memory
+## [1] 0
+##
+## $host_config$memory_reservation
+## [1] 0
+##
+## $host_config$memory_swap
+## [1] 0
+##
+## $host_config$memory_swappiness
+## [1] NA
+##
+## $host_config$nano_cpus
+## [1] NA
+##
+## $host_config$oom_kill_disable
+## [1] FALSE
+##
+## $host_config$init
+## [1] NA
+##
+## $host_config$pids_limit
+## [1] 0
+##
+## $host_config$ulimits
+## [1] name soft hard
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$cpu_count
+## [1] 0
+##
+## $host_config$cpu_percent
+## [1] 0
+##
+## $host_config$io_maximum_iops
+## [1] 0
+##
+## $host_config$io_maximum_bandwidth
+## [1] 0
+##
+## $host_config$binds
+## character(0)
+##
+## $host_config$container_idfile
+## [1] ""
+##
+## $host_config$log_config
+## $host_config$log_config$type
+## [1] "json-file"
+##
+## $host_config$log_config$config
+## character(0)
+##
+##
+## $host_config$network_mode
+## [1] "default"
+##
+## $host_config$port_bindings
+## NULL
+##
+## $host_config$restart_policy
+## $host_config$restart_policy$name
+## [1] ""
+##
+## $host_config$restart_policy$maximum_retry_count
+## [1] 0
+##
+##
+## $host_config$auto_remove
+## [1] FALSE
+##
+## $host_config$volume_driver
+## [1] ""
+##
+## $host_config$volumes_from
+## character(0)
+##
+## $host_config$mounts
+## [1] target         source         type           read_only
+## [5] consistency    bind_options   volume_options tmpfs_options
+## <0 rows> (or 0-length row.names)
+##
+## $host_config$cap_add
+## character(0)
+##
+## $host_config$cap_drop
+## character(0)
+##
+## $host_config$dns
+## character(0)
+##
+## $host_config$dns_options
+## character(0)
+##
+## $host_config$dns_search
+## character(0)
+##
+## $host_config$extra_hosts
+## character(0)
+##
+## $host_config$group_add
+## character(0)
+##
+## $host_config$ipc_mode
+## [1] "shareable"
+##
+## $host_config$cgroup
+## [1] ""
+##
+## $host_config$links
+## character(0)
+##
+## $host_config$oom_score_adj
+## [1] 0
+##
+## $host_config$pid_mode
+## [1] ""
+##
+## $host_config$privileged
+## [1] FALSE
+##
+## $host_config$publish_all_ports
+## [1] FALSE
+##
+## $host_config$readonly_rootfs
+## [1] FALSE
+##
+## $host_config$security_opt
+## character(0)
+##
+## $host_config$storage_opt
+## NULL
+##
+## $host_config$tmpfs
+## NULL
+##
+## $host_config$uts_mode
+## [1] ""
+##
+## $host_config$userns_mode
+## [1] ""
+##
+## $host_config$shm_size
+## [1] 67108864
+##
+## $host_config$sysctls
+## NULL
+##
+## $host_config$runtime
+## [1] NA
+##
+## $host_config$console_size
+## [1] 0 0
+##
+## $host_config$isolation
+## [1] ""
+##
+##
+## $graph_driver
+## $graph_driver$name
+## [1] "overlay2"
+##
+## $graph_driver$data
+##                                                                                                                                                                                                                                                                                           lower_dir
+## "/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5-init/diff:/var/lib/docker/overlay2/0f637fe5156e7f7bd2a628b24174f276c6ec9e8a3723ff4b64b31851ad7828bd/diff:/var/lib/docker/overlay2/552f07f3a7c097bea8e9f21926b47499928906f70793411a3b0932104ef0e4a7/diff"
+##                                                                                                                                                                                                                                                                                          merged_dir
+##                                                                                                                                                                                                  "/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5/merged"
+##                                                                                                                                                                                                                                                                                           upper_dir
+##                                                                                                                                                                                                    "/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5/diff"
+##                                                                                                                                                                                                                                                                                            work_dir
+##                                                                                                                                                                                                    "/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5/work"
+##
+##
+## $size_rw
+## [1] NA
+##
+## $size_root_fs
+## [1] NA
+##
+## $mounts
+## [1] type        name        source      destination driver      mode
+## [7] rw          propagation
+## <0 rows> (or 0-length row.names)
+##
+## $config
+## $config$hostname
+## [1] "eff11ac84d9e"
+##
+## $config$domainname
+## [1] ""
+##
+## $config$user
+## [1] ""
+##
+## $config$attach_stdin
+## [1] FALSE
+##
+## $config$attach_stdout
+## [1] FALSE
+##
+## $config$attach_stderr
+## [1] FALSE
+##
+## $config$exposed_ports
+## NULL
+##
+## $config$tty
+## [1] FALSE
+##
+## $config$open_stdin
+## [1] FALSE
+##
+## $config$stdin_once
+## [1] FALSE
+##
+## $config$env
+## [1] "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+##
+## $config$cmd
+## [1] "1000" "1"
+##
+## $config$healthcheck
+## NULL
+##
+## $config$args_escaped
+## [1] NA
+##
+## $config$image
+## [1] "richfitz/iterate"
+##
+## $config$volumes
+## NULL
+##
+## $config$working_dir
+## [1] ""
+##
+## $config$entrypoint
+## [1] "/usr/local/bin/iterate"
+##
+## $config$network_disabled
+## [1] NA
+##
+## $config$mac_address
+## [1] NA
+##
+## $config$on_build
+## character(0)
+##
+## $config$labels
+## stevedore_version
+##           "0.0.1"
+##
+## $config$stop_signal
+## [1] NA
+##
+## $config$stop_timeout
+## [1] NA
+##
+## $config$shell
+## character(0)
+##
+##
+## $network_settings
+## $network_settings$bridge
+## [1] ""
+##
+## $network_settings$sandbox_id
+## [1] ""
+##
+## $network_settings$hairpin_mode
+## [1] FALSE
+##
+## $network_settings$link_local_ipv6_address
+## [1] ""
+##
+## $network_settings$link_local_ipv6_prefix_len
+## [1] 0
+##
+## $network_settings$ports
+## list()
+##
+## $network_settings$sandbox_key
+## [1] ""
+##
+## $network_settings$secondary_ipaddresses
+## [1] addr       prefix_len
+## <0 rows> (or 0-length row.names)
+##
+## $network_settings$secondary_ipv6_addresses
+## [1] addr       prefix_len
+## <0 rows> (or 0-length row.names)
+##
+## $network_settings$endpoint_id
+## [1] ""
+##
+## $network_settings$gateway
+## [1] ""
+##
+## $network_settings$global_ipv6_address
+## [1] ""
+##
+## $network_settings$global_ipv6_prefix_len
+## [1] 0
+##
+## $network_settings$ip_address
+## [1] ""
+##
+## $network_settings$ip_prefix_len
+## [1] 0
+##
+## $network_settings$ipv6_gateway
+## [1] ""
+##
+## $network_settings$mac_address
+## [1] ""
+##
+## $network_settings$networks
+## $network_settings$networks$bridge
+## $network_settings$networks$bridge$ipam_config
+## NULL
+##
+## $network_settings$networks$bridge$links
+## character(0)
+##
+## $network_settings$networks$bridge$aliases
+## character(0)
+##
+## $network_settings$networks$bridge$network_id
+## [1] ""
+##
+## $network_settings$networks$bridge$endpoint_id
+## [1] ""
+##
+## $network_settings$networks$bridge$gateway
+## [1] ""
+##
+## $network_settings$networks$bridge$ip_address
+## [1] ""
+##
+## $network_settings$networks$bridge$ip_prefix_len
+## [1] 0
+##
+## $network_settings$networks$bridge$ipv6_gateway
+## [1] ""
+##
+## $network_settings$networks$bridge$global_ipv6_address
+## [1] ""
+##
+## $network_settings$networks$bridge$global_ipv6_prefix_len
+## [1] 0
+##
+## $network_settings$networks$bridge$mac_address
+## [1] ""
+##
+## $network_settings$networks$bridge$driver_opts
+## NULL
+```
+
+The image used by a container can be retrieved with the `$image()`
+method
+
+```r
+x$image()
+```
+
+```
+## <docker_image>
+##   export()
+##   help(help_type = getOption("help_type"))
+##   history()
+##   id()
+##   inspect(reload = TRUE)
+##   labels(reload = TRUE)
+##   name()
+##   reload()
+##   remove(force = NULL, noprune = NULL)
+##   short_id()
+##   tag(repo, tag = NULL)
+##   tags(reload = TRUE)
+##   untag(repo_tag)
+```
+
+(see below for working with images).
+
+The status of the container (`created`, `running`, `exited`,
+`paused`, etc) can be read with `$status()`
+
+```r
+x$status()
+```
+
+```
+## [1] "created"
+```
+
+The container created by by `$create` is not running - the
+`$start()` method will start it:
+
+```r
+x$start()
+x$status()
+```
+
+```
+## [1] "running"
+```
+
+Once the container is running we can query to see what processes
+are running in it with `$top` (standing for Table Of Processes)
+
+```r
+x$top()
+```
+
+```
+##    PID USER TIME                                         COMMAND
+## 1 9076 root 0:00 {iterate} /bin/sh /usr/local/bin/iterate 1000 1
+## 2 9108 root 0:00                                         sleep 1
+```
+
+We can also get the logs:
+
+```r
+x$logs()
+```
+
+```
+## O> Doing 1000 iterations with interval 1
+## O> Iteration 1...
+```
+
+This returns a special object type `docker_stream` which allows
+control over formatting with `format()` - the `style` argument
+controls how stderr and stdout are printed.  There is a `stream`
+attribute that can be used to separate out lines too.  If a tty was
+allocated with `tty = TRUE` the output will be a plain character
+vector
+
+```r
+format(x$logs(), style = "plain")
+```
+
+```
+## [1] "Doing 1000 iterations with interval 1\n"
+## [2] "Iteration 1...\n"
+```
+
+It can generally be treated as a character vector:
+
+```r
+x$logs()[1:2]
+```
+
+```
+## [1] "Doing 1000 iterations with interval 1\n"
+## [2] "Iteration 1...\n"
+```
+
+The `$logs()` method can be used to do a blocking wait on a
+container.  Pass `follow = TRUE` to follow the logs.  You will want
+to provide a `stream` argument too, which is where to stream the
+log to.  This can be `stdout()` or `stderr()`, a file or an R
+connection.
+
+```r
+y <- docker$container$create("richfitz/iterate", c("10", "0.1"))
+y$start()
+y$logs(stream = stdout(), follow = TRUE)
+```
+
+```
+## O> Doing 10 iterations with interval 0.1
+## O> Iteration 1...
+## O> Iteration 2...
+## O> Iteration 3...
+## O> Iteration 4...
+## O> Iteration 5...
+## O> Iteration 6...
+## O> Iteration 7...
+## O> Iteration 8...
+## O> Iteration 9...
+## O> Iteration 10...
+## O> Done!
+```
+
+If running this interactively, the logs will print one line at a
+time - once control returns to R the container has exited.  You can
+escape this streaming using whatever method you use to interrupt an
+R calculation (depends on which GUI/IDE you are using) but the
+container will continue regardless - we are just _observing_ a
+running container.
+
+```r
+y$status()
+```
+
+```
+## [1] "exited"
+```
+
+The other way of blocking until a container has finished is with
+`$wait()` which blocks until the container exits, then returns the
+exit code.
+
+```r
+y$start()
+y$wait()
+```
+
+```
+## $exit_code
+## [1] 0
+```
+
+Calling `$wait()` on an exited container is fine, and will just
+return immediately:
+
+```r
+y$wait()
+```
+
+```
+## $exit_code
+## [1] 0
+```
+
+Containers can be paused with `$pause()`
+
+```r
+x$pause()
+```
+
+```
+## NULL
+```
+
+```r
+x$status()
+```
+
+```
+## [1] "paused"
+```
+
+Once paused, they can be restarted with `$unpause()`
+
+```r
+x$unpause()
+```
+
+```
+## NULL
+```
+
+```r
+x$status()
+```
+
+```
+## [1] "running"
+```
+
+Additionally, containers can be _restarted_ with `$restart()`
+
+```r
+x$restart(t = 0)
+```
+
+```
+## NULL
+```
+
+```r
+x$logs(tail = 5)
+```
+
+```
+## O> Iteration 3...
+## O> Iteration 4...
+## O> Iteration 5...
+## O> Doing 1000 iterations with interval 1
+## O> Iteration 1...
+```
+
+Containers can be stopped with `$stop()` and removed with
+`$remove()` (calling `$remove(force = TRUE)` will kill the
+container before removing.
+
+```r
+x$stop(t = 0)
+```
+
+```
+## NULL
+```
+
+```r
+x$remove()
+```
+
+```
+## NULL
+```
+
+Once a container has been removed most methods will not work properly:
+
+```r
+x$status()
+```
+
+```
+## Error: No such container: eff11ac84d9e5645e2d7735f395244ad8eecd836501a8b1b12b8ae181be6ba03
+```
+
+
+
+Information about ports (for containers that expose them) can be
+retrieved with `$ports()`.  The `nginx` image creates a web
+server/proxy that exposes port 80 from the container.  We can map
+that to a random port by asking docker to expose port 80 but not
+saying what to map it to:
+
+```r
+nginx <- docker$container$run("nginx", ports = 80,
+                              detach = TRUE, rm = TRUE,
+                              name = "stevedore-nginx")
+nginx$ports()
+```
+
+```
+##   container_port protocol host_ip host_port
+## 1             80      tcp 0.0.0.0     32772
+```
+
+(alternatively, use `ports = TRUE` to act like `docker run`'s `-P`
+and "publish all ports to random ports).
+
+
+
+This shows that the port exposed by the the container (80) is
+mapped to the port 32772 on the
+host.  We can use this to communicate with the server:
+
+```r
+url <- sprintf("http://localhost:%s", nginx$ports()$host_port)
+curl::parse_headers(curl::curl_fetch_memory(url)$headers)
+```
+
+```
+## [1] "HTTP/1.1 200 OK"
+## [2] "Server: nginx/1.15.6"
+## [3] "Date: Thu, 08 Nov 2018 09:58:13 GMT"
+## [4] "Content-Type: text/html"
+## [5] "Content-Length: 612"
+## [6] "Last-Modified: Tue, 06 Nov 2018 13:32:09 GMT"
+## [7] "Connection: keep-alive"
+## [8] "ETag: \"5be197d9-264\""
+## [9] "Accept-Ranges: bytes"
+```
+
+```r
+nginx$stop(t = 0)
+```
+
+```
+## NULL
+```
+
+
+## Run commands in running containers with `exec`
+
+With the command-line tool, `docker exec <container name>
+<command>` lets you run an arbitrary command within a running
+container.  `stevedore` does this with the `exec` method of a
+container object.
+
+Reasons for doing this include debugging (using arbitrary commands
+to inspect/interact with a container while it does its primary
+task) but it can also be used in deployment (e.g., sending a "go"
+signal after copying files into the container).
+
+To demonstrate, we need a long running container:
+
+```r
+x <- docker$container$run("richfitz/iterate", c("1000", "10"),
+                          detach = TRUE, rm = TRUE)
+x$status()
+```
+
+```
+## [1] "running"
+```
+
+With the container running we can run additional commands:
+
+```r
+res <- x$exec("ls")
+```
+
+```
+## O> bin
+## O> dev
+## O> etc
+## O> home
+## O> lib
+## O> media
+## O> mnt
+## O> proc
+## O> root
+## O> run
+## O> sbin
+## O> srv
+## O> sys
+## O> tmp
+## O> usr
+## O> var
+```
+
+This streams the output of the command by default (to the
+connection indicated by the `stream`) argument.  Output is also
+returned as part of the object:
+
+```r
+res
+```
+
+```
+## $id
+## [1] "07686a2672491e49840bbba814f062257a6b20d626740db842f414821a5e5049"
+##
+## $exit_code
+## [1] 0
+##
+## $details
+## $details$can_remove
+## [1] FALSE
+##
+## $details$detach_keys
+## [1] ""
+##
+## $details$id
+## [1] "07686a2672491e49840bbba814f062257a6b20d626740db842f414821a5e5049"
+##
+## $details$running
+## [1] FALSE
+##
+## $details$exit_code
+## [1] 0
+##
+## $details$process_config
+## $details$process_config$privileged
+## [1] FALSE
+##
+## $details$process_config$user
+## [1] NA
+##
+## $details$process_config$tty
+## [1] FALSE
+##
+## $details$process_config$entrypoint
+## [1] "ls"
+##
+## $details$process_config$arguments
+## character(0)
+##
+##
+## $details$open_stdin
+## [1] FALSE
+##
+## $details$open_stderr
+## [1] TRUE
+##
+## $details$open_stdout
+## [1] TRUE
+##
+## $details$container_id
+## [1] "f8d32b27f8aa60fd0f3ee069847db2e1eb77f91ed7535b5a5ff6e04d1c7b0a4e"
+##
+## $details$pid
+## [1] 9827
+##
+##
+## $output
+## O> bin
+## O> dev
+## O> etc
+## O> home
+## O> lib
+## O> media
+## O> mnt
+## O> proc
+## O> root
+## O> run
+## O> sbin
+## O> srv
+## O> sys
+## O> tmp
+## O> usr
+## O> var
+```
+
+## Copy files into and out of containers
+
+Just like `docker cp`, `stevedore` lets you copy files into and out
+of containers.  The logic mimics the logic in the docker command
+line client as closely as possible.
+
+To copy a file into our container `x`, use `$cp_in`
+
+```r
+path <- tempfile()
+writeLines("hello", path)
+x$cp_in(path, "/hello")
+```
+
+And the new file is on the container
+
+```r
+x$exec(c("cat", "/hello"), stream = FALSE)$output
+```
+
+```
+## O> hello
+```
+
+The input can be a single file or a single directory.
+
+To copy out, use `$cp_out`
+
+```r
+dest <- tempfile()
+x$cp_out("/usr/local/bin/iterate", dest)
+```
+
+Here is the iterate script, from the container:
+
+```r
+writeLines(readLines(dest, n = 10))
+```
+
+```
+## #!/bin/sh
+## set -e
+##
+## if [ "$#" -ge 1 ]; then
+##     TIMES=$1
+## else
+##     TIMES=10
+## fi
+##
+## if [ "$#" -ge 2 ]; then
+```
+
+There is also a convenience method at the root of the docker object
+that behaves more like `docker cp` and requires that one of the source or destination arguments is given in `<container>:<path>` format:
+
+```r
+src <- paste0(x$name(), ":/usr/local/bin/iterate")
+src
+```
+
+```
+## [1] "happy_kilby:/usr/local/bin/iterate"
+```
+
+as
+
+
+```r
+dest2 <- tempfile()
+docker$cp(src, dest2)
+```
+
+which achieves the same thing as the `$cp_out` command above.
+
+```r
+unname(tools::md5sum(c(dest, dest2)))
+```
+
+```
+## [1] "87bea4544cfd716dbab5030deb873b62" "87bea4544cfd716dbab5030deb873b62"
+```
+
+(don't forget to remove your detached containers later!)
+
+```r
+x$kill()
+```
+
+```
+## NULL
+```
+
+## Images
+
+### Pulling
+
+
+
+Images can be directly pulled with `docker$image$pull` providing
+an image name (as either `<repo>` or `<repo>:<tag>`.  If the image
+exists already this will be quick, and if the network connection is
+down then this will fail.
+
+```r
+docker$image$pull("bash:latest")
+```
+
+```
+## Pulling from library/bash latest
+## Already exists 4fe2ade4980c
+## Pulling fs layer ec6d9ca5c66a
+## Pulling fs layer d8685fbd86ca
+## d8685fbd86ca: Downloading 341 B/341 B 100%
+## Verifying Checksum d8685fbd86ca
+## Download complete d8685fbd86ca
+## ec6d9ca5c66a: Downloading 27.88 kB/2.73 MB 1%
+## ec6d9ca5c66a: Downloading 2.23 MB/2.73 MB 82%
+## Verifying Checksum ec6d9ca5c66a
+## Download complete ec6d9ca5c66a
+## ec6d9ca5c66a: Extracting 32.77 kB/2.73 MB 1%
+## ec6d9ca5c66a: Extracting 1.34 MB/2.73 MB 49%
+## ec6d9ca5c66a: Extracting 2.56 MB/2.73 MB 94%
+## ec6d9ca5c66a: Extracting 2.72 MB/2.73 MB 100%
+## ec6d9ca5c66a: Extracting 2.73 MB/2.73 MB 100%
+## Pull complete ec6d9ca5c66a
+## d8685fbd86ca: Extracting 341 B/341 B 100%
+## d8685fbd86ca: Extracting 341 B/341 B 100%
+## Pull complete d8685fbd86ca
+## Digest: sha256:8634afcddefc8a10565b22d685df782058b096712a91bf45d75633f368dda729
+## Status: Downloaded newer image for bash:latest
+```
+
+```
+## <docker_image>
+##   export()
+##   help(help_type = getOption("help_type"))
+##   history()
+##   id()
+##   inspect(reload = TRUE)
+##   labels(reload = TRUE)
+##   name()
+##   reload()
+##   remove(force = NULL, noprune = NULL)
+##   short_id()
+##   tag(repo, tag = NULL)
+##   tags(reload = TRUE)
+##   untag(repo_tag)
+```
+
+### The object returned by pull is an image object - that can be
+### created by using `$get`
+
+```r
+img <- docker$image$get("bash:latest")
+```
+
+### Building
+
+The other common way of getting images is to build them (the
+equivalent of `docker build`).  So if we have a path (here,
+`iterate`) containing a Dockerfile:
+
+```r
+dir("iterate")
+```
+
+```
+## [1] "Dockerfile" "iterate"
+```
+
+The Dockerfile itself contains:
+```plain
+FROM alpine:latest
+COPY iterate /usr/local/bin/iterate
+CMD chmod +x /usr/local/bin/iterate
+LABEL stevedore_version 0.0.1
+ENTRYPOINT ["/usr/local/bin/iterate"]
+```
+
+and the `iterate` file is an executable shell script containing:
+```shell
+#!/bin/sh
+set -e
+
+if [ "$#" -ge 1 ]; then
+    TIMES=$1
+else
+    TIMES=10
+fi
+
+if [ "$#" -ge 2 ]; then
+    INTERVAL=$2
+else
+    INTERVAL=1
+fi
+
+echo "Doing $TIMES iterations with interval $INTERVAL"
+i=0
+while [ $i -lt $TIMES ]; do
+    let i+=1
+    echo "Iteration $i..."
+    sleep $INTERVAL
+done
+echo "Done!"
+```
+
+We can build this image using:
+
+```r
+img <- docker$image$build("iterate", tag = "richfitz/iterate", nocache = TRUE)
+```
+
+```
+## Step 1/5 : FROM alpine:latest
+##  ---> 196d12cf6ab1
+## Step 2/5 : COPY iterate /usr/local/bin/iterate
+##  ---> edd3344b049f
+## Step 3/5 : CMD chmod +x /usr/local/bin/iterate
+##  ---> Running in a7e17d0d5435
+## Removing intermediate container a7e17d0d5435
+##  ---> a439e13dd870
+## Step 4/5 : LABEL stevedore_version 0.0.1
+##  ---> Running in 72a70d3eda62
+## Removing intermediate container 72a70d3eda62
+##  ---> e57263fa5be8
+## Step 5/5 : ENTRYPOINT ["/usr/local/bin/iterate"]
+##  ---> Running in 427227e0d07f
+## Removing intermediate container 427227e0d07f
+##  ---> c8b1e1f480aa
+## Successfully built c8b1e1f480aa
+## Successfully tagged richfitz/iterate:latest
+```
+
+```r
+img
+```
+
+```
+## <docker_image>
+##   export()
+##   help(help_type = getOption("help_type"))
+##   history()
+##   id()
+##   inspect(reload = TRUE)
+##   labels(reload = TRUE)
+##   name()
+##   reload()
+##   remove(force = NULL, noprune = NULL)
+##   short_id()
+##   tag(repo, tag = NULL)
+##   tags(reload = TRUE)
+##   untag(repo_tag)
+```
+
+The newly created image is returned as an image object and can be
+used via `$container$run()`
+
+```r
+invisible(
+  docker$container$run(img, c("10", "0.1"), rm = TRUE, stream = stdout()))
+```
+
+```
+## O> Doing 10 iterations with interval 0.1
+## O> Iteration 1...
+## O> Iteration 2...
+## O> Iteration 3...
+## O> Iteration 4...
+## O> Iteration 5...
+## O> Iteration 6...
+## O> Iteration 7...
+## O> Iteration 8...
+## O> Iteration 9...
+## O> Iteration 10...
+## O> Done!
+```
+
+
+
+### Importing
+
+There is a third way of creating an image, which is to import it
+from a tar archive.  This is not yet documented (**TODO**) but can
+be done via `$image$import()`
+
+### Working with image objects
+
+Each image object has a number of methods.
+
+```r
+img <- docker$image$get("richfitz/iterate")
+img
+```
+
+```
+## <docker_image>
+##   export()
+##   help(help_type = getOption("help_type"))
+##   history()
+##   id()
+##   inspect(reload = TRUE)
+##   labels(reload = TRUE)
+##   name()
+##   reload()
+##   remove(force = NULL, noprune = NULL)
+##   short_id()
+##   tag(repo, tag = NULL)
+##   tags(reload = TRUE)
+##   untag(repo_tag)
+```
+
+The `$id()`, `$short_id()`, `$labels()`, `$name()` and `$tags()`
+query basic information about an image
+
+```r
+img$id()
+```
+
+```
+## [1] "sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c"
+```
+
+```r
+img$short_id()
+```
+
+```
+## [1] "sha256:c8b1e1f480"
+```
+
+```r
+img$labels()
+```
+
+```
+## stevedore_version
+##           "0.0.1"
+```
+
+```r
+img$name()
+```
+
+```
+## [1] "richfitz/iterate"
+```
+
+```r
+img$tags()
+```
+
+```
+## [1] "richfitz/iterate:latest"
+```
+
+(short_id` is always 10 characters long and does not include a
+leading `sha256:`).
+
+The `inspect()` method returns detailed information about the image
+
+```r
+img$inspect()
+```
+
+```
+## $id
+## [1] "sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c"
+##
+## $repo_tags
+## [1] "richfitz/iterate:latest"
+##
+## $repo_digests
+## character(0)
+##
+## $parent
+## [1] "sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62"
+##
+## $comment
+## [1] ""
+##
+## $created
+## [1] "2018-11-08T09:58:20.5589147Z"
+##
+## $container
+## [1] "427227e0d07f7831f280381814b30daba4b6e75e057d7e21dfb972bf1bd7a677"
+##
+## $container_config
+## $container_config$hostname
+## [1] "427227e0d07f"
+##
+## $container_config$domainname
+## [1] ""
+##
+## $container_config$user
+## [1] ""
+##
+## $container_config$attach_stdin
+## [1] FALSE
+##
+## $container_config$attach_stdout
+## [1] FALSE
+##
+## $container_config$attach_stderr
+## [1] FALSE
+##
+## $container_config$exposed_ports
+## NULL
+##
+## $container_config$tty
+## [1] FALSE
+##
+## $container_config$open_stdin
+## [1] FALSE
+##
+## $container_config$stdin_once
+## [1] FALSE
+##
+## $container_config$env
+## [1] "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+##
+## $container_config$cmd
+## [1] "/bin/sh"
+## [2] "-c"
+## [3] "#(nop) "
+## [4] "ENTRYPOINT [\"/usr/local/bin/iterate\"]"
+##
+## $container_config$healthcheck
+## NULL
+##
+## $container_config$args_escaped
+## [1] TRUE
+##
+## $container_config$image
+## [1] "sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62"
+##
+## $container_config$volumes
+## NULL
+##
+## $container_config$working_dir
+## [1] ""
+##
+## $container_config$entrypoint
+## [1] "/usr/local/bin/iterate"
+##
+## $container_config$network_disabled
+## [1] NA
+##
+## $container_config$mac_address
+## [1] NA
+##
+## $container_config$on_build
+## character(0)
+##
+## $container_config$labels
+## stevedore_version
+##           "0.0.1"
+##
+## $container_config$stop_signal
+## [1] NA
+##
+## $container_config$stop_timeout
+## [1] NA
+##
+## $container_config$shell
+## character(0)
+##
+##
+## $docker_version
+## [1] "18.05.0-ce"
+##
+## $author
+## [1] ""
+##
+## $config
+## $config$hostname
+## [1] ""
+##
+## $config$domainname
+## [1] ""
+##
+## $config$user
+## [1] ""
+##
+## $config$attach_stdin
+## [1] FALSE
+##
+## $config$attach_stdout
+## [1] FALSE
+##
+## $config$attach_stderr
+## [1] FALSE
+##
+## $config$exposed_ports
+## NULL
+##
+## $config$tty
+## [1] FALSE
+##
+## $config$open_stdin
+## [1] FALSE
+##
+## $config$stdin_once
+## [1] FALSE
+##
+## $config$env
+## [1] "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+##
+## $config$cmd
+## [1] "/bin/sh"                         "-c"
+## [3] "chmod +x /usr/local/bin/iterate"
+##
+## $config$healthcheck
+## NULL
+##
+## $config$args_escaped
+## [1] TRUE
+##
+## $config$image
+## [1] "sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62"
+##
+## $config$volumes
+## NULL
+##
+## $config$working_dir
+## [1] ""
+##
+## $config$entrypoint
+## [1] "/usr/local/bin/iterate"
+##
+## $config$network_disabled
+## [1] NA
+##
+## $config$mac_address
+## [1] NA
+##
+## $config$on_build
+## character(0)
+##
+## $config$labels
+## stevedore_version
+##           "0.0.1"
+##
+## $config$stop_signal
+## [1] NA
+##
+## $config$stop_timeout
+## [1] NA
+##
+## $config$shell
+## character(0)
+##
+##
+## $architecture
+## [1] "amd64"
+##
+## $os
+## [1] "linux"
+##
+## $os_version
+## [1] NA
+##
+## $size
+## [1] 4413676
+##
+## $virtual_size
+## [1] 4413676
+##
+## $graph_driver
+## $graph_driver$name
+## [1] "overlay2"
+##
+## $graph_driver$data
+##                                                                                          lower_dir
+##   "/var/lib/docker/overlay2/552f07f3a7c097bea8e9f21926b47499928906f70793411a3b0932104ef0e4a7/diff"
+##                                                                                         merged_dir
+## "/var/lib/docker/overlay2/1a91d52cb709a1ffbe340f8e333c6eb55387d3005f73fd009d6d86cd930e4989/merged"
+##                                                                                          upper_dir
+##   "/var/lib/docker/overlay2/1a91d52cb709a1ffbe340f8e333c6eb55387d3005f73fd009d6d86cd930e4989/diff"
+##                                                                                           work_dir
+##   "/var/lib/docker/overlay2/1a91d52cb709a1ffbe340f8e333c6eb55387d3005f73fd009d6d86cd930e4989/work"
+##
+##
+## $root_fs
+## $root_fs$type
+## [1] "layers"
+##
+## $root_fs$layers
+## [1] "sha256:df64d3292fd6194b7865d7326af5255db6d81e9df29f48adde61a918fbd8c332"
+## [2] "sha256:051f311b03fd72d33f49b92474d49af829dd12783acab6bd25f8ca12fad903f1"
+##
+## $root_fs$base_layer
+## [1] NA
+##
+##
+## $metadata
+## $metadata$last_tag_time
+## [1] "2018-11-08T09:58:20.628139Z"
+```
+
+the exact format varies between docker API versions but should be
+the same for all images within an API version.
+
+The `history()` method returns a data.frame of information about
+the history of an image (i.e., the layers that it is constructed
+from)
+
+```r
+img$history()
+```
+
+```
+##                                                                        id
+## 1 sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c
+## 2 sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62
+## 3 sha256:a439e13dd8709134a2db6a76c441f2fa9055565a2fc4165d7989cc17a1a2b9db
+## 4 sha256:edd3344b049f978c480142e7d2fcbcc4160d221b1464ac5ea911ed4a22ccb01b
+## 5 sha256:196d12cf6ab19273823e700516e98eb1910b03b17840f9d5509f03858484d321
+## 6                                                               <missing>
+##      created
+## 1 1541671100
+## 2 1541671100
+## 3 1541671100
+## 4 1541671099
+## 5 1536704390
+## 6 1536704390
+##                                                                                                                created_by
+## 1                                                                /bin/sh -c #(nop)  ENTRYPOINT ["/usr/local/bin/iterate"]
+## 2                                                                        /bin/sh -c #(nop)  LABEL stevedore_version=0.0.1
+## 3                                               /bin/sh -c #(nop)  CMD ["/bin/sh" "-c" "chmod +x /usr/local/bin/iterate"]
+## 4 /bin/sh -c #(nop) COPY file:efe53a0b7763b2563b430ec205d0afcf139aef00ec6e086e03b446645968dd8d in /usr/local/bin/iterate
+## 5                                                                                      /bin/sh -c #(nop)  CMD ["/bin/sh"]
+## 6                       /bin/sh -c #(nop) ADD file:25c10b1d1b41d46a1827ad0b0d2389c24df6d31430005ff4e9a2d84ea23ebd42 in /
+##           tags    size comment
+## 1 richfitz....       0
+## 2                    0
+## 3                    0
+## 4                  306
+## 5 alpine:l....       0
+## 6              4413370
+```
+
+(printing these objects is a real challenge!).
+
+The `export()` method exports an image as a tar object.  There is
+some work still required to make this work nicely (currently it
+returns a [potentially long] raw vector).
+
+There are several methods that operate to modify or destroy the image:
+
+The `$tag()` method will tag an image, for example
+
+```r
+img$tag("richfitz/iterate", "0.0.1")
+img$reload()
+img$tags()
+```
+
+```
+## [1] "richfitz/iterate:0.0.1"  "richfitz/iterate:latest"
+```
+
+While the `$untag()` method will remove a tag
+
+```r
+img$untag("richfitz/iterate:0.0.1")
+```
+
+The `$remove()` method will remove an image - this returns a
+data.frame indicating what actually happened (images are only
+actually deleted if there are no other tags pointing at an image
+_and_ if `noprune` is not `TRUE`.
+
+```r
+img$remove()
+```
+
+```
+##                  untagged
+## 1 richfitz/iterate:latest
+## 2                    <NA>
+## 3                    <NA>
+## 4                    <NA>
+## 5                    <NA>
+## 6                    <NA>
+##                                                                   deleted
+## 1                                                                    <NA>
+## 2 sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c
+## 3 sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62
+## 4 sha256:a439e13dd8709134a2db6a76c441f2fa9055565a2fc4165d7989cc17a1a2b9db
+## 5 sha256:edd3344b049f978c480142e7d2fcbcc4160d221b1464ac5ea911ed4a22ccb01b
+## 6 sha256:eea0512d51354fe7a6c6fd0ee5c9907fecb0660342db09afeeb06a3aa4c9ae00
+```
+
+
+
+## Volumes
+
+Docker volumes provide a useful abstraction for interacting with
+(possibly persistent) file volumes across containers.  To create a
+volume using `stevedore` (equivalent to `docker volume create`) use
+`$volume$create()`:
+
+```r
+vol <- docker$volume$create("myvolume")
+```
+
+Volumes can be listed:
+
+```r
+docker$volume$list()
+```
+
+```
+##       name driver                             mountpoint
+## 1 myvolume  local /var/lib/docker/volumes/myvolume/_data
+##             created_at status labels scope options usage_data
+## 1 2018-11-08T09:58:22Z               local             NA, NA
+```
+
+### Working with volume objects
+
+There's very little that can be done with volume objects:
+
+```r
+vol
+```
+
+```
+## <docker_volume>
+##   help(help_type = getOption("help_type"))
+##   inspect(reload = TRUE)
+##   map(path, readonly = FALSE)
+##   name()
+##   reload()
+##   remove(force = NULL)
+```
+
+We can get the name:
+
+```r
+vol$name()
+```
+
+```
+## [1] "myvolume"
+```
+
+Inspect the metadata
+
+```r
+vol$inspect()
+```
+
+```
+## $name
+## [1] "myvolume"
+##
+## $driver
+## [1] "local"
+##
+## $mountpoint
+## [1] "/var/lib/docker/volumes/myvolume/_data"
+##
+## $created_at
+## [1] "2018-11-08T09:58:22Z"
+##
+## $status
+## NULL
+##
+## $labels
+## NULL
+##
+## $scope
+## [1] "local"
+##
+## $options
+## NULL
+##
+## $usage_data
+## NULL
+```
+
+Generate mount definitions:
+
+```r
+vol$map("/comtainer/path")
+```
+
+```
+## [1] "myvolume:/comtainer/path"
+```
+
+and can remove the volume
+
+```r
+vol$remove()
+```
+
+```
+## NULL
+```
+
+everything else comes from using volumes with containers.
+
+Containers are mounted the same way as from the docker command line
+- with a string in the form `<host>:<container>`.  Here we can use
+the volume name on the host side, so saying `<myvolume>:/myvolume`
+mounts our volume at `/myvolume` within the container.  This can be
+done easily with the `$map()` method.
+
+```r
+vol <- docker$volume$create("myvolume")
+docker$container$run(
+  "alpine:latest",
+  c("sh", "-c", "echo hello world > /myvolume/output"),
+  volumes = vol$map("/myvolume"),
+  rm = TRUE)
+```
+
+```
+## <docker_run_output>
+##   $container:
+##     <docker_container>
+##       id: aa80a57c5f9660244251a938d568dbb908e557d885bf7904f5055c5617972b7d
+##       name: zen_lalande
+##
+##   $logs:
+##
+```
+
+(We use `sh -c` here so that the redirect operates within the
+container - the third argument is evaluated by the shell within the
+container and redirects the value that is echoed to a file.)
+
+We can see the result of this by using a second container to read
+the file:
+
+```r
+docker$container$run(
+  "alpine:latest",
+  c("cat", "/myvolume/output"),
+  volumes = vol$map("/myvolume"),
+  rm = TRUE)$logs
+```
+
+```
+## O> hello world
+```
+
+```
+## O> hello world
+```
+
+
+
+## Networks
+
+Docker "networks" make it easy to get containers communicating with
+each other without exposing ports to the host.  To achive this, one
+creates a docker network, then create containers attached to that
+network (containers can also be attached to networks after
+creation).
+
+```r
+nw <- docker$network$create("mynetwork")
+```
+
+Networks can be listed:
+
+```r
+docker$network$list()
+```
+
+```
+##        name
+## 1      host
+## 2      none
+## 3    bridge
+## 4 mynetwork
+##                                                                 id
+## 1 2f80d37c9c534b35f1dfff0896f5391243432ad720dc6df371279dfb78fea0a3
+## 2 9bad2ae5c810c2d3fb9e2c73db5b733338189010b3e19803003051758a3962ba
+## 3 8bc1cc7ddc2eb36bcb0856854799a26b41549f16ab0ad9b643a632ba146a4b87
+## 4 d45cd1c0ff89eb9c74d89a0cad12929a27592f834dd581f2b9cf162d1fa4433b
+##                          created scope driver enable_ipv6         ipam
+## 1           0001-01-01T00:00:00Z local   host       FALSE default,....
+## 2           0001-01-01T00:00:00Z local   null       FALSE default,....
+## 3 2018-11-07T18:08:07.300707148Z local bridge       FALSE default,....
+## 4   2018-11-08T09:58:25.1723547Z local bridge       FALSE default,....
+##   internal attachable ingress containers      options labels
+## 1    FALSE      FALSE   FALSE
+## 2    FALSE      FALSE   FALSE
+## 3    FALSE      FALSE   FALSE            true, tr....
+## 4    FALSE      FALSE   FALSE
+```
+
+The networks `bridge`, `host` and `none` always exist - they are
+special to docker.
+
+### Working with network objects
+
+Like volume objects, network objects do very little themselves:
+
+```r
+nw
+```
+
+```
+## <docker_network>
+##   connect(container = NULL, endpoint_config = NULL)
+##   containers(reload = TRUE)
+##   disconnect(container = NULL, force = NULL)
+##   help(help_type = getOption("help_type"))
+##   id()
+##   inspect(reload = TRUE)
+##   name(reload = TRUE)
+##   reload()
+##   remove()
+```
+
+The `$name()` and `$id()` methods get the name and id of the network
+
+```r
+nw$name()
+```
+
+```
+## [1] "mynetwork"
+```
+
+```r
+nw$id()
+```
+
+```
+## [1] "d45cd1c0ff89eb9c74d89a0cad12929a27592f834dd581f2b9cf162d1fa4433b"
+```
+
+`$inspect()` gets detailed metadata
+
+```r
+nw$inspect()
+```
+
+```
+## $name
+## [1] "mynetwork"
+##
+## $id
+## [1] "d45cd1c0ff89eb9c74d89a0cad12929a27592f834dd581f2b9cf162d1fa4433b"
+##
+## $created
+## [1] "2018-11-08T09:58:25.1723547Z"
+##
+## $scope
+## [1] "local"
+##
+## $driver
+## [1] "bridge"
+##
+## $enable_ipv6
+## [1] FALSE
+##
+## $ipam
+## $ipam$driver
+## [1] "default"
+##
+## $ipam$config
+## $ipam$config[[1]]
+##          subnet         gateway
+## "172.18.0.0/16"    "172.18.0.1"
+##
+##
+## $ipam$options
+## list()
+##
+##
+## $internal
+## [1] FALSE
+##
+## $attachable
+## [1] FALSE
+##
+## $ingress
+## [1] FALSE
+##
+## $containers
+## list()
+##
+## $options
+## character(0)
+##
+## $labels
+## character(0)
+```
+
+`$containers()` lists containers attached to the network (currently
+an empty list - this network has no attached containers)
+
+```r
+nw$containers()
+```
+
+```
+## list()
+```
+
+`$remove()` removes the network
+
+```r
+nw$remove()
+```
+
+```
+## NULL
+```
+
+Generally you'll want to put containers onto a network.
+
+The setup here is to create a network, and then use the `network`
+argument to `$container$run()` to attach a container to that
+network.  Once established, containers on the same network can use
+another docker container's name as the hostname and communicate!
+
+```r
+nw <- docker$network$create("mynetwork")
+server <- docker$container$run("nginx", network = nw, name = "server",
+                               detach = TRUE, rm = TRUE)
+server$status()
+```
+
+```
+## [1] "running"
+```
+
+Now we can attach other networks to this container and communicate
+with the server:
+
+```r
+docker$container$run("alpine:latest", c("ping", "server", "-c", "3"),
+                     network = nw, stream = stdout(), rm = TRUE)
+```
+
+```
+## O> PING server (172.18.0.2): 56 data bytes
+## O> 64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.085 ms
+## O> 64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.153 ms
+## O> 64 bytes from 172.18.0.2: seq=2 ttl=64 time=0.153 ms
+## O>
+## O> --- server ping statistics ---
+## O> 3 packets transmitted, 3 packets received, 0% packet loss
+## O> round-trip min/avg/max = 0.085/0.130/0.153 ms
+```
+
+```
+## <docker_run_output>
+##   $container:
+##     <docker_container>
+##       id: 4f8c4d88d98e033c25f002007d9b9d5b0118c19ffb281c9aab36eec61fa8bc5c
+##       name: elastic_edison
+##
+##   $logs:
+##     O> PING server (172.18.0.2): 56 data bytes
+##     O> 64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.085 ms
+##     O> 64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.153 ms
+##     O> 64 bytes from 172.18.0.2: seq=2 ttl=64 time=0.153 ms
+##     O>
+##     O> --- server ping statistics ---
+##     O> 3 packets transmitted, 3 packets received, 0% packet loss
+##     O> round-trip min/avg/max = 0.085/0.130/0.153 ms
+```
+
+Omitting the `network` argument, the second container can't find
+the server:
+
+```r
+docker$container$run("alpine:latest", c("ping", "server", "-c", "3"),
+                     stream = stdout(), rm = TRUE)
+```
+
+```
+## E> ping: bad address 'server'
+```
+
+```
+## Error: Command 'ping server -c 3' in image 'alpine:latest' returned non-zero exit status 1
+## ping: bad address 'server'
+```
+
+The server container exposes a webserver on port 80.  For
+containers on the network we can access this port:
+
+```r
+res <- docker$container$run("richfitz/curl", c("curl", "-s", "http://server"),
+                            network = nw, rm = TRUE)
+```
+
+```
+## O> <!DOCTYPE html>
+## O> <html>
+## O> <head>
+## O> <title>Welcome to nginx!</title>
+## O> <style>
+## O>     body {
+## O>         width: 35em;
+## O>         margin: 0 auto;
+## O>         font-family: Tahoma, Verdana, Arial, sans-serif;
+## O>     }
+## O> </style>
+## O> </head>
+## O> <body>
+## O> <h1>Welcome to nginx!</h1>
+## O> <p>If you see this page, the nginx web server is successfully installed and
+## O> working. Further configuration is required.</p>
+## O>
+## O> <p>For online documentation and support please refer to
+## O> <a href="http://nginx.org/">nginx.org</a>.<br/>
+## O> Commercial support is available at
+## O> <a href="http://nginx.com/">nginx.com</a>.</p>
+## O>
+## O> <p><em>Thank you for using nginx.</em></p>
+## O> </body>
+## O> </html>
+```
+
+```r
+head(res$logs, 10)
+```
+
+```
+##  [1] "<!DOCTYPE html>\n"
+##  [2] "<html>\n"
+##  [3] "<head>\n"
+##  [4] "<title>Welcome to nginx!</title>\n"
+##  [5] "<style>\n"
+##  [6] "    body {\n"
+##  [7] "        width: 35em;\n"
+##  [8] "        margin: 0 auto;\n"
+##  [9] "        font-family: Tahoma, Verdana, Arial, sans-serif;\n"
+## [10] "    }\n"
+```
+
+```r
+server$stop()
+```
+
+```
+## NULL
+```
+
+```r
+nw$remove()
+```
+
+```
+## NULL
+```
+
+## Other docker functions
+
+There are a few functions at the top level of the `docker_client`
+object:
+
+`$ping()` tests the connection to the server and reports the API
+version for the server - this is a (for docker) very fast function
+to use to test that things seem to be working.
+
+```r
+docker$ping()
+```
+
+```
+## [1] "OK"
+## attr(,"api_version")
+## [1] "1.37"
+## attr(,"docker_experimental")
+## [1] TRUE
+```
+
+`$api_version()` reports the API version that the *client* is using
+(this can be varied from 1.25 to
+1.37)
+
+```r
+docker$api_version()
+```
+
+```
+## [1] "1.37"
+```
+
+`$version()` reports detailed version information from the server:
+
+```r
+docker$version()
+```
+
+```
+## $platform
+## $platform$name
+## [1] ""
+##
+##
+## $components
+##     name    version      details
+## 1 Engine 18.05.0-ce 1.37, am....
+##
+## $version
+## [1] "18.05.0-ce"
+##
+## $api_version
+## [1] "1.37"
+##
+## $min_api_version
+## [1] "1.12"
+##
+## $git_commit
+## [1] "f150324"
+##
+## $go_version
+## [1] "go1.10.1"
+##
+## $os
+## [1] "linux"
+##
+## $arch
+## [1] "amd64"
+##
+## $kernel_version
+## [1] "4.9.93-linuxkit-aufs"
+##
+## $experimental
+## [1] TRUE
+##
+## $build_time
+## [1] "2018-05-09T22:20:16.000000000+00:00"
+```
+
+`$info()` reports a bunch of other information about the state of
+the server (Docker describes this as "get system information" in
+its documentation) - this is equivalent to running `docker info`
+
+```r
+docker$info()
+```
+
+```
+## $id
+## [1] "6EZD:2CUP:YGOU:4AYR:ULBJ:ROVP:YEF3:ZE3F:EN5G:TXBB:T7IF:KUC4"
+##
+## $containers
+## [1] 0
+##
+## $containers_running
+## [1] 0
+##
+## $containers_paused
+## [1] 0
+##
+## $containers_stopped
+## [1] 0
+##
+## $images
+## [1] 21
+##
+## $driver
+## [1] "overlay2"
+##
+## $driver_status
+## $driver_status[[1]]
+## [1] "Backing Filesystem" "extfs"
+##
+## $driver_status[[2]]
+## [1] "Supports d_type" "true"
+##
+## $driver_status[[3]]
+## [1] "Native Overlay Diff" "true"
+##
+##
+## $docker_root_dir
+## [1] "/var/lib/docker"
+##
+## $system_status
+## list()
+##
+## $plugins
+## $plugins$volume
+## [1] "local"
+##
+## $plugins$network
+## [1] "bridge"  "host"    "ipvlan"  "macvlan" "null"    "overlay"
+##
+## $plugins$authorization
+## character(0)
+##
+## $plugins$log
+## [1] "awslogs"    "fluentd"    "gcplogs"    "gelf"       "journald"
+## [6] "json-file"  "logentries" "splunk"     "syslog"
+##
+##
+## $memory_limit
+## [1] TRUE
+##
+## $swap_limit
+## [1] TRUE
+##
+## $kernel_memory
+## [1] TRUE
+##
+## $cpu_cfs_period
+## [1] TRUE
+##
+## $cpu_cfs_quota
+## [1] TRUE
+##
+## $cpu_shares
+## [1] TRUE
+##
+## $cpu_set
+## [1] TRUE
+##
+## $oom_kill_disable
+## [1] TRUE
+##
+## $ipv4_forwarding
+## [1] TRUE
+##
+## $bridge_nf_iptables
+## [1] TRUE
+##
+## $bridge_nf_ip6tables
+## [1] TRUE
+##
+## $debug
+## [1] TRUE
+##
+## $n_fd
+## [1] 25
+##
+## $n_goroutines
+## [1] 42
+##
+## $system_time
+## [1] "2018-11-08T09:58:32.3205267Z"
+##
+## $logging_driver
+## [1] "json-file"
+##
+## $cgroup_driver
+## [1] "cgroupfs"
+##
+## $n_events_listener
+## [1] 2
+##
+## $kernel_version
+## [1] "4.9.93-linuxkit-aufs"
+##
+## $operating_system
+## [1] "Docker for Mac"
+##
+## $os_type
+## [1] "linux"
+##
+## $architecture
+## [1] "x86_64"
+##
+## $n_cpu
+## [1] 2
+##
+## $mem_total
+## [1] 2096058368
+##
+## $index_server_address
+## [1] "https://index.docker.io/v1/"
+##
+## $registry_config
+## $registry_config$allow_nondistributable_artifacts_cidrs
+## character(0)
+##
+## $registry_config$allow_nondistributable_artifacts_hostnames
+## character(0)
+##
+## $registry_config$insecure_registry_cidrs
+## [1] "127.0.0.0/8"
+##
+## $registry_config$index_configs
+## $registry_config$index_configs$docker.io
+## $registry_config$index_configs$docker.io$name
+## [1] "docker.io"
+##
+## $registry_config$index_configs$docker.io$mirrors
+## character(0)
+##
+## $registry_config$index_configs$docker.io$secure
+## [1] TRUE
+##
+## $registry_config$index_configs$docker.io$official
+## [1] TRUE
+##
+##
+##
+## $registry_config$mirrors
+## character(0)
+##
+##
+## $generic_resources
+## [1] named_resource_spec    discrete_resource_spec
+## <0 rows> (or 0-length row.names)
+##
+## $http_proxy
+## [1] "gateway.docker.internal:3128"
+##
+## $https_proxy
+## [1] "gateway.docker.internal:3129"
+##
+## $no_proxy
+## [1] ""
+##
+## $name
+## [1] "linuxkit-025000000001"
+##
+## $labels
+## character(0)
+##
+## $experimental_build
+## [1] TRUE
+##
+## $server_version
+## [1] "18.05.0-ce"
+##
+## $cluster_store
+## [1] ""
+##
+## $cluster_advertise
+## [1] ""
+##
+## $runtimes
+## $runtimes$runc
+## $runtimes$runc$path
+## [1] "docker-runc"
+##
+## $runtimes$runc$runtime_args
+## character(0)
+##
+##
+##
+## $default_runtime
+## [1] "runc"
+##
+## $swarm
+## $swarm$node_id
+## [1] ""
+##
+## $swarm$node_addr
+## [1] ""
+##
+## $swarm$local_node_state
+## [1] "inactive"
+##
+## $swarm$control_available
+## [1] FALSE
+##
+## $swarm$error
+## [1] ""
+##
+## $swarm$remote_managers
+## [1] node_id addr
+## <0 rows> (or 0-length row.names)
+##
+## $swarm$nodes
+## [1] NA
+##
+## $swarm$managers
+## [1] NA
+##
+## $swarm$cluster
+## NULL
+##
+##
+## $live_restore_enabled
+## [1] FALSE
+##
+## $isolation
+## [1] ""
+##
+## $init_binary
+## [1] "docker-init"
+##
+## $containerd_commit
+## $containerd_commit$id
+## [1] "773c489c9c1b21a6d78b5c538cd395416ec50f88"
+##
+## $containerd_commit$expected
+## [1] "773c489c9c1b21a6d78b5c538cd395416ec50f88"
+##
+##
+## $runc_commit
+## $runc_commit$id
+## [1] "4fc53a81fb7c994640722ac585fa9ca548971871"
+##
+## $runc_commit$expected
+## [1] "4fc53a81fb7c994640722ac585fa9ca548971871"
+##
+##
+## $init_commit
+## $init_commit$id
+## [1] "949e6fa"
+##
+## $init_commit$expected
+## [1] "949e6fa"
+##
+##
+## $security_options
+## [1] "name=seccomp,profile=default"
+```
+
+Finally, `$df()` will return information about resource and data
+usage by docker - all containers, networks, volumes, etc.

@@ -1,0 +1,41 @@
+## The types here needs to be topologically ordered - if type 'A'
+## includes type 'B', then 'B' must be listed first.
+
+## For example, 'health_config' is used by 'container_spec' (it's also
+## used by container create)
+health_config:
+  path: ["definitions", "HealthConfig"]
+  from: 1.26
+
+dns_config:
+  path: ["definitions", "TaskSpec", "properties", "ContainerSpec", "properties", "DNSConfig"]
+
+mount:
+  path: ["definitions", "Mount"]
+
+container_spec:
+  path: ["definitions", "TaskSpec", "properties", "ContainerSpec"]
+  special:
+    health_check: health_config
+    dns_config: dns_config
+  custom:
+    # validated elsewhere:
+    secrets: pass_through
+    configs: pass_through
+
+task_resources:
+  path: ["definitions", "TaskSpec", "properties", "Resources"]
+
+task_restart_policy:
+  path: ["definitions", "TaskSpec", "properties", "RestartPolicy"]
+
+task_placement:
+  path: ["definitions", "TaskSpec", "properties", "Placement"]
+
+task_spec:
+  path: ["definitions", "TaskSpec"]
+  special:
+    container_spec: container_spec
+    resources: task_resources
+    restart_policy: task_restart_policy
+    placement: task_placement

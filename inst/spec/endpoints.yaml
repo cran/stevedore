@@ -1,0 +1,608 @@
+## These are the set of supported endpoints.
+
+## Further fields to this will be added because we'll get min/max
+## versions, and annotations for the parameter handling.
+system_auth:
+  method: post
+  path: "/auth"
+  cli: "login"
+
+system_info:
+  method: get
+  path: "/info"
+  cli: "info"
+
+system_version:
+  method: get
+  path: "/version"
+  cli: "version"
+
+system_ping:
+  method: get
+  path: "/_ping"
+
+system_events:
+  method: get
+  path: "/events"
+  cli: "events"
+
+system_df:
+  method: get
+  path: "/system/df"
+  cli: "system df"
+
+## This is included as a "system" method but I think it might go
+## better as an image method?
+system_distribution:
+  method: get
+  path: "/distribution/{name}/json"
+  from: "1.30"
+
+container_list:
+  method: get
+  path: "/containers/json"
+  cli: ["ps", "container ls"]
+
+container_create:
+  method: post
+  path: "/containers/create"
+  cli: ["create", "container create"]
+  ## TODO: 'handlers' vs 'special'
+  handlers:
+    healthcheck: health_config
+
+container_inspect:
+  method: get
+  path: "/containers/{id}/json"
+  cli: "container inspect"
+
+container_top:
+  method: get
+  path: "/containers/{id}/top"
+  cli: ["top", "container top"]
+
+container_logs:
+  method: get
+  path: "/containers/{id}/logs"
+  cli: ["logs", "container logs"]
+  extra:
+    stream: &extra-stream
+      default: stdout()
+      help: >-
+        The stream to send output to.  Options here are (1) a
+        connection object (e.g. `stdout()`, `stderr()` or a writable
+        open file connection object, (2) a scalar character indicating
+        a filename to write to, or (3) `FALSE` or `NULL` to disable
+        any output.
+
+container_export:
+  method: get
+  path: "/containers/{id}/export"
+  cli: ["export", "container export"]
+
+container_changes:
+  method: get
+  path: "/containers/{id}/changes"
+  cli: ["diff", "container diff"]
+
+container_stats:
+  method: get
+  path: "/containers/{id}/stats"
+  cli: ["stats", "container stats"]
+
+container_resize:
+  method: post
+  path: "/containers/{id}/resize"
+
+container_start:
+  method: post
+  path: "/containers/{id}/start"
+  cli: ["start", "container start"]
+
+container_stop:
+  method: post
+  path: "/containers/{id}/stop"
+  cli: ["stop", "container stop"]
+
+container_restart:
+  method: post
+  path: "/containers/{id}/restart"
+  cli: ["restart", "container restart"]
+
+container_kill:
+  method: post
+  path: "/containers/{id}/kill"
+  cli: ["kill", "container kill"]
+
+container_update:
+  method: post
+  path: "/containers/{id}/update"
+  cli: ["update", "container update"]
+
+container_rename:
+  method: post
+  path: "/containers/{id}/rename"
+  cli: ["rename", "container rename"]
+
+container_pause:
+  method: post
+  path: "/containers/{id}/pause"
+  cli: ["pause", "container pause"]
+
+container_unpause:
+  method: post
+  path: "/containers/{id}/unpause"
+  cli: ["unpause", "container unpause"]
+
+container_attach:
+  method: post
+  path: "/containers/{id}/attach"
+  cli: ["attach", "container attach"]
+
+container_attach_ws:
+  method: get
+  path: "/containers/{id}/attach/ws"
+  cli: ["attach", "container attach"]
+
+container_wait:
+  method: post
+  path: "/containers/{id}/wait"
+  cli: ["wait", "container wait"]
+
+container_delete:
+  method: delete
+  path: "/containers/{id}"
+  cli: ["rm", "container rm"]
+
+container_path_stat:
+  method: head
+  path: "/containers/{id}/archive"
+
+container_archive:
+  method: get
+  path: "/containers/{id}/archive"
+  extra:
+    dest:
+      help: >-
+        Destination for the archive.  Must be either a scalar
+        character (representing a filename) or `NULL`, in which case a
+        raw vector is returned.
+
+container_import:
+  method: put
+  path: "/containers/{id}/archive"
+
+container_prune:
+  method: post
+  path: "/containers/prune"
+  cli: "container prune"
+
+
+image_list:
+  method: get
+  path: "/images/json"
+  cli: ["images", "image list"]
+
+image_build:
+  method: post
+  path: "/build"
+  cli: ["build", "image build"]
+  extra:
+    stream: *extra-stream
+
+image_create:
+  method: post
+  path: "/images/create"
+  cli: ["pull", "image pull"]
+  extra:
+    stream: *extra-stream
+
+image_inspect:
+  method: get
+  path: "/images/{name}/json"
+  cli: "image inspect"
+
+image_history:
+  method: get
+  path: "/images/{name}/history"
+  cli: "image history"
+
+image_push:
+  method: post
+  path: "/images/{name}/push"
+  cli: ["push", "image push"]
+  extra:
+    stream: *extra-stream
+
+image_tag:
+  method: post
+  path: "/images/{name}/tag"
+  cli: ["tag", "image tag"]
+
+image_delete:
+  method: delete
+  path: "/images/{name}"
+  cli: ["rmi", "image rm"]
+
+image_search:
+  method: get
+  path: "/images/search"
+  cli: "search"
+
+image_prune:
+  method: post
+  path: "/images/prune"
+  cli: "image prune"
+
+image_commit:
+  method: post
+  path: "/commit"
+  cli: ["commit", "container commit"]
+
+image_tarball:
+  method: get
+  path: "/images/{name}/get"
+  cli: "image save"
+
+image_export:
+  method: get
+  path: "/images/get"
+  cli: "image save"
+
+image_import:
+  method: post
+  path: "/images/load"
+  cli: "image import"
+
+image_build_clean:
+  method: post
+  path: "/build/prune"
+  from: "1.31"
+
+network_list:
+  method: get
+  path: "/networks"
+  cli: "network ls"
+
+network_inspect:
+  method: get
+  path: "/networks/{id}"
+  cli: "network inspect"
+
+network_delete:
+  method: delete
+  path: "/networks/{id}"
+  cli: "network rm"
+
+network_create:
+  method: post
+  path: "/networks/create"
+  cli: "network create"
+
+network_connect:
+  method: post
+  path: "/networks/{id}/connect"
+  cli: "network connect"
+
+network_disconnect:
+  method: post
+  path: "/networks/{id}/disconnect"
+  cli: "network disconnect"
+
+network_prune:
+  method: post
+  path: "/networks/prune"
+  cli: "network prune"
+
+volume_list:
+  method: get
+  path: "/volumes"
+  cli: "volume ls"
+
+volume_create:
+  method: post
+  path: "/volumes/create"
+  cli: "volume create"
+
+volume_inspect:
+  method: get
+  path: "/volumes/{name}"
+  cli: "volume inspect"
+
+volume_delete:
+  method: delete
+  path: "/volumes/{name}"
+  cli: "volume rm"
+
+volume_prune:
+  method: post
+  path: "/volumes/prune"
+  cli: "volume prune"
+
+
+exec_create:
+  method: post
+  path: "/containers/{id}/exec"
+  cli: "exec"
+
+exec_start:
+  method: post
+  path: "/exec/{id}/start"
+  extra:
+    stream: *extra-stream
+
+exec_resize:
+  method: post
+  path: "/exec/{id}/resize"
+
+exec_inspect:
+  method: get
+  path: "/exec/{id}/json"
+
+
+## These are all "swarm mode" endpoints
+swarm_inspect:
+  method: get
+  path: "/swarm"
+
+swarm_init:
+  method: post
+  path: "/swarm/init"
+  cli: "swarm init"
+
+swarm_join:
+  method: post
+  path: "/swarm/join"
+  cli: "swarm join"
+
+swarm_leave:
+  method: post
+  path: "/swarm/leave"
+  cli: "swarm leave"
+
+swarm_update:
+  method: post
+  path: "/swarm/update"
+  cli: "swarm update"
+
+swarm_unlock_key:
+  method: get
+  path: "/swarm/unlockkey"
+  cli: "swarm unlock-key"
+
+swarm_unlock:
+  method: post
+  path: "/swarm/unlock"
+  cli: "swarm unlock"
+
+
+node_list:
+  method: get
+  path: "/nodes"
+  cli: "node list"
+
+node_inspect:
+  method: get
+  path: "/nodes/{id}"
+  cli: "node inspect"
+
+node_delete:
+  method: delete
+  path: "/nodes/{id}"
+  cli: "node rm"
+
+node_update:
+  method: post
+  path: "/nodes/{id}/update"
+  cli: "node update"
+
+
+service_list:
+  method: get
+  path: "/services"
+  cli: "service list"
+
+service_create:
+  method: post
+  path: "/services/create"
+  cli: "service create"
+  handlers:
+    task_template: task_spec
+  extra:
+    stream: *extra-stream
+    replicas:
+      default: null
+      help: >-
+        Number of replicas to use.  If `NULL` (the default) then a
+        single replica is used (the same behaviour as the command line
+        client).
+    global:
+      default: false
+      help: >-
+        Logical, indicating if this should be a "global" service
+        (running one instance on each node) rather than a "replicated"
+        service (running across nodes - the default).
+    detach:
+      default: false
+      help: >-
+        Logical, indicating if we should exit immediately, rather than
+        waiting for the service to converge.  This option is named for
+        consistency with `docker service create` - this command never
+        "attaches" in the sense of a single container.
+    timeout:
+      default: 60
+      help: >-
+        Time, in seconds, to wait for the service to converge when
+        `detach = FALSE`.  If the service has not converged by this time
+        an error will be thrown, but the docker daemon will continue
+        trying to start the service.
+    time_wait_stable:
+      default: 5
+      help: >-
+        Time, in seconds, to wait for the service to stay up after it
+        has started.  This is needed to detect services that fail
+        shortly after starting.  The default is 5 seconds, which matches
+        the command line client.
+
+service_inspect:
+  method: get
+  path: "/services/{id}"
+  cli: "service inspect"
+
+service_delete:
+  method: delete
+  path: "/services/{id}"
+  cli: "service rm"
+
+service_update:
+  method: post
+  path: "/services/{id}/update"
+  cli: "service update"
+
+service_logs:
+  method: get
+  path: "/services/{id}/logs"
+  cli: "service logs"
+
+
+task_list:
+  method: get
+  path: "/tasks"
+
+task_inspect:
+  method: get
+  path: "/tasks/{id}"
+
+task_logs:
+  method: get
+  path: "/tasks/{id}/logs"
+  from: "1.29"
+  extra:
+    stream: *extra-stream
+
+
+secret_list:
+  method: get
+  path: "/secrets"
+  cli: "secret ls"
+
+secret_create:
+  method: post
+  path: "/secrets/create"
+  cli: "secret create"
+
+secret_inspect:
+  method: get
+  path: "/secrets/{id}"
+  cli: "secret inspect"
+
+secret_delete:
+  method: delete
+  path: "/secrets/{id}"
+  cli: "secret rm"
+
+secret_update:
+  method: post
+  path: "/secrets/{id}/update"
+  from: "1.26"
+
+
+## Only available >= 1.30
+config_list:
+  method: get
+  path: "/configs"
+  from: "1.30"
+  cli: "config ls"
+
+config_create:
+  method: post
+  path: "/configs/create"
+  from: "1.30"
+  cli: "config create"
+
+config_inspect:
+  method: get
+  path: "/configs/{id}"
+  from: "1.30"
+  cli: "config inspect"
+
+config_delete:
+  method: delete
+  path: "/configs/{id}"
+  from: "1.30"
+  cli: "config rm"
+
+config_update:
+  method: post
+  path: "/configs/{id}/update"
+  from: "1.30"
+
+
+## Not swarm related:
+plugin_list:
+  method: get
+  path: "/plugins"
+  cli: "plugin ls"
+
+plugin_privileges:
+  method: get
+  path: "/plugins/privileges"
+
+plugin_install:
+  method: post
+  path: "/plugins/pull"
+  cli: "plugin install"
+  extra:
+    disable:
+      default: false
+      help: >-
+        Do not enable the plugin on install
+    grant_all:
+      default: NULL
+      help: >-
+        Logical, indicating if all requested permissions should be
+        granted.  If `NULL`, this will prompt interactively for
+        permission.  Setting this to `FALSE` will cause the
+        installation to fail.
+    stream: *extra-stream
+
+plugin_inspect:
+  method: get
+  path: "/plugins/{name}/json"
+  cli: "plugin inspect"
+
+plugin_remove:
+  method: delete
+  path: "/plugins/{name}"
+  cli: "plugin rm"
+
+plugin_enable:
+  method: post
+  path: "/plugins/{name}/enable"
+  cli: "plugin enable"
+
+plugin_disable:
+  method: post
+  path: "/plugins/{name}/disable"
+  cli: "plugin disable"
+
+plugin_create:
+  method: post
+  path: "/plugins/create"
+  cli: "plugin create"
+
+plugin_push:
+  method: post
+  path: "/plugins/{name}/push"
+  cli: "plugin push"
+
+plugin_configure:
+  method: post
+  path: "/plugins/{name}/set"
+  cli: "plugin set"
+
+plugin_upgrade:
+  method: post
+  path: "/plugins/{name}/upgrade"
+  from: "1.26"
+  cli: "plugin upgrade"

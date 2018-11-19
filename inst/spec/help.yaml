@@ -1,0 +1,591 @@
+docker_client:
+  api_version:
+    summary: >-
+      Return the version of the API that the docker client is using to
+      communicate with the server, as a string (e.g., "1.29")
+  connection_info:
+    summary: >-
+      Return information about the connection to the server.
+  help: &help
+    summary: >-
+      Display help for this object
+    args:
+      help_type: >-
+        Passed to `utils::help`, can be one of "text", "html" or
+        "pdf" (or an abbreviation).  By default it uses the value
+        `getOption("help_type")` and should follow the same
+        behaviour as other R help (e.g., using "?")
+  request:
+    summary: >-
+      Interact directly with the Docker HTTP API.  This might be
+      useful for debugging or for trying out new/experimental docker
+      features that have not yet made it into stevedore.  This is most
+      likely to be useful in conjunction with the Docker API docs;
+      https://docs.docker.com/engine/api Each call will return a list
+      with elements `url` (the used url), `status_code` (the HTTP
+      status code), `headers` (a raw vector containing the returned
+      headers) and `content` (a raw vector containing the content).
+      The `curl` driver provides some other entries too.
+    args:
+      verb: >-
+        A HTTP verb (e.g., `GET`, `POST`) as a string.  Will be
+        converted to uppercase.
+      path: >-
+        A path as a string, e.g., `/version` or `/containers/json`.
+        Do not provide any hostname, and use an absoluate path.
+      query: >-
+        Optionally, a named list of query parameters (e.g.,
+        `list(limit = 10)` as a query parameter for
+        `/containers/json`).
+      body: >-
+        Either a raw vector (e.g., a tar-ed image for `POST /build`)
+        or a string representing json (e.g. for `POST
+        /containers/create`).
+      headers: >-
+        Headers to send with the request.  The API does not use this
+        extensively except for `X-Registry-Auth` for some endpoints.
+      stream: >-
+        An R function to handle streaming output.  If given then the
+        function must take a single argument which will be a raw
+        vector with the docker daemon's output.  The function's return
+        output is ignored so needs to do all actions via side effects.
+  cp:
+    summary: >-
+      Copy a file or directory between the host filesystem and a
+      running container.  Like the command line, exactly one of `from`
+      and `to` must be in the form `<container>:<path>` while the
+      other must be in the form `<path>`.  This wrapper is included
+      for compatiblity with the docker command line and is available
+      in a slightly more flexible form as `cp_out` and `cp_in`
+      methods of a `docker_container` object.
+    cli: cp
+    args:
+      src: >-
+        The source file or directory.  If on the host it may be a
+        relative or an absolute path.  If on the container then it
+        must be of the form `<container_id>:<path>`; the container id
+        can be an id (hex) or name.
+      dest: >-
+        The destination file or directory, with the same pattern as
+        `from`.
+
+docker_container_collection:
+  get:
+    summary: >-
+      Get a container by name or id
+    args:
+      id: >-
+        A scalar character with the container's name or id
+        (abbreviations of the id are allowed and will be resolved by
+        the docker daemon).
+  help: *help
+  run:
+    cli: run
+    summary: >-
+      Run a command in a new container
+    description: |
+      This method does rather a lot, and wraps several other methods.
+      It aims to mimic the behaviour of `docker run` in the command
+      line tool.  It will:
+
+      - Try to pull a container if it does not yet exist (see
+        `$pull` in `?docker_image_collection`)
+      - Create the container (see `$create` in
+        `?docker_container_collection`)
+      - Start the container (see `$start` in `?docker_container`)
+      - Optionally stream the logs, if not detached (see
+        `$logs` in `?docker_container`
+      - Wait for the container to finish (see `$wait` in
+        `?docker_container`)
+
+      It returns a list with a container object as
+      `"container"` and a `"docker_stream"` object
+      containing logs as `"logs"`).  If `rm = TRUE` and
+      `detach = TRUE` the container object will be of limited
+      utility and you will need to use `reload = FALSE` on many
+      methods (and some will not work) as the container will have
+      been removed on exit.
+
+      Unlike the command line version, interrupting the streaming
+      logs will not necessarily kill the container but may leave it
+      running in the background.
+
+      Unlike the command line version, the `attach = TRUE`
+      simply attaches the output of the container and blocks
+      the R session until it is complete.  There is currently no way
+      of sending input into the docker container.
+    args:
+      image: >-
+        Image to run.  Can be a name, id, or a
+        `?docker_image` object.
+      cmd: >-
+        Command to run in the container.  Must be a character
+        vector.  If not specified then the default `ENTRYPOINT`
+        and `CMD` will be used (see the docker documentation
+        for details)
+      "...": >-
+        Additional arguments passed through to `$create` (see
+        `?docker_container_collection`.  There are many
+        possible arguments here.
+      detach: >-
+        Detach the container as soon as it has started and return
+        control to R.  The container will run in the background.
+        The returned object can be used to interrogate the container
+        afterwards (see `?docker_container`).
+      rm: >-
+        Remove the container on exit.
+      stream: >-
+        The stream to use to send output to, if `detach =
+        FALSE`.  The default uses the standard output stream (i.e.,
+        where `cat` would send output).  Other valid
+        values are an R connection object, a string (interpreted as
+        a filename) or `FALSE` to prevent any output.
+      host_config: >-
+        Passed through to `$create`, as with `...`.
+
+docker_image_collection:
+  get:
+    summary: >-
+      Get an image by name or id
+    args:
+      id: >-
+        A scalar character with the image's name or id
+        (abbreviations of the id are allowed and will be resolved by
+        the docker daemon).
+  help: *help
+
+docker_network_collection:
+  get:
+    summary: >-
+      Get a network by name or id
+    args:
+      id: >-
+        A scalar character with the network's name or id
+        (abbreviations of the id are allowed and will be resolved by
+        the docker daemon).
+  help: *help
+
+docker_volume_collection:
+  get:
+    summary: >-
+      Get a volume by name or id
+    args:
+      name: >-
+        A scalar character with the volume's name.
+  help: *help
+
+docker_container:
+  help: *help
+  id:
+    summary: >-
+      Return the container's id
+  image:
+    summary: >-
+      Return the image for this container, as a
+      `?docker_image` object.
+  inspect:
+    summary: >-
+      Return detailed information about this container
+    args:
+      reload: &reload-container >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after a container has been removed.
+    cli: "container inspect"
+  name:
+    summary: >-
+      Return name for this container
+  labels:
+    summary: >-
+      Return labels for this container
+    args:
+      reload: *reload-container
+  ports:
+    summary: >-
+      Return a `data.frame` of information about ports
+      opened by this container.  This is particularly useful in a
+      container started with `ports = TRUE`, where container
+      ports are mapped to random ports on the host.
+    args:
+      reload: *reload-container
+    cli: "container port"
+  reload:
+    summary: >-
+      Refresh infomation on the container from the server, returning
+      `$inspect()` invisibly.
+  status:
+    summary: >-
+      Short status of the container ("running", "exited", etc).
+    args:
+      reload: Refresh container data?
+  cp_in:
+    summary: >-
+      Copy files or directory into the container.  This function tries
+      to follow the same semantics as the command line `docker cp`
+      command.
+    args:
+      src: >-
+        File or directory to copy into the container.
+      dest: >-
+        Destination within the container.  This must be a single path.
+  cp_out:
+    summary: >-
+      Copy files or directories from the container.  This function tries
+      to follow the same semantics as the command line `docker cp`
+      command.
+    args:
+      src: >-
+        File or directory within the container to copy to the host.
+      dest: >-
+        Destination on the host.  This must be a single path.
+
+docker_image:
+  help: *help
+  id:
+    summary: >-
+      Return the image's id
+  inspect:
+    summary: >-
+      Return detailed information about this image
+    args:
+      reload: >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after an image has been removed.
+    cli: "image inspect"
+  name:
+    summary: >-
+      Return name for this image
+  labels:
+    summary: >-
+      Return labels for this image
+    args:
+      reload: &reload-image >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after an image has been removed.
+  reload:
+    summary: >-
+      Refresh infomation on the image from the server, returning
+      `$inspect()` invisibly.
+  short_id:
+    summary: >-
+      Abbreviated identifier, truncated to 10 characters (perhaps plus
+      the leading `sha256:`
+  tags:
+    summary: >-
+      Return tags for this image
+    args:
+      reload: *reload-image
+  untag:
+    summary: >-
+      Remove tags from the image.  This is a lot like
+      `image$remove` (see `?docker_image_collection`)
+      but with `noprune = TRUE`.
+    args:
+      repo_tag: >
+        Tags to remove
+
+docker_network:
+  containers:
+    summary: >-
+      Return containers connected to this network
+    args:
+      reload: >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon (usually what you want).
+  help: *help
+  id:
+    summary: >-
+      Return the network's id
+  inspect:
+    summary: >-
+      Return detailed information about this network
+    args:
+      reload: >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after an network has been removed.
+    cli: "network inspect"
+  name:
+    summary: >-
+      Return name for this network
+    args:
+      reload: >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after a network has been removed.
+  reload:
+    summary: >-
+      Refresh infomation on the network from the server, returning
+      `$inspect()` invisibly.
+
+docker_volume:
+  help: *help
+  id:
+    summary: >-
+      Return the volume's id
+  inspect:
+    summary: >-
+      Return detailed information about this volume
+    args:
+      reload: >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after an volume has been removed.
+    cli: "volume inspect"
+  map:
+    summary: >-
+      Generate a path suitable to be passed in to
+      `docker$container$run` or `docker$container$create`
+    args:
+      path: >-
+        Path in the container to map the volume to
+      readonly: >-
+        Logical, indicating if this should be a readonly mount
+  name:
+    summary: >-
+      Return name for this volume
+  reload:
+    summary: >-
+      Refresh infomation on the volume from the server, returning
+      `$inspect()` invisibly.
+
+docker_exec:
+  help: *help
+  id:
+    summary: >-
+      Return the exec instance's id
+  inspect:
+    summary: >-
+      Return detailed information about this exec instance
+    args:
+      reload: >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.
+  reload:
+    summary: >-
+      Refresh infomation on the exec instance from the server, returning
+      `$inspect()` invisibly.
+
+docker_swarm_collection:
+  help: *help
+
+docker_node_collection:
+  help: *help
+  get:
+    summary: >-
+      Get a service by name or id
+    args:
+      id: >-
+        A scalar character with the network's name or id
+        (abbreviations of the id are allowed and will be resolved by
+        the docker daemon).
+
+docker_node:
+  help: *help
+  id:
+    summary: >-
+      Return the node's id
+  inspect:
+    summary: >-
+      Return detailed information about this node
+    args:
+      reload: &reload-node >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after a node has been removed.
+    cli: "node inspect"
+  hostname:
+    summary: >-
+      Return the node's hostname
+    args:
+      reload: *reload-node
+  status:
+    summary: >-
+      Return the node's status (
+    args:
+      reload: *reload-node
+  role:
+    summary: >-
+      Return the node's role (worker, manager))
+    args:
+      reload: *reload-node
+  availability:
+    summary: >-
+      Return the node's availability (active, pause, drain)
+    args:
+      reload: *reload-node
+  version:
+    summary: >-
+      Return the node's version.  This is used by some other
+      methods to avoid conflicting writes.
+    args:
+      reload: *reload-node
+  reload:
+    summary: >-
+      Refresh infomation on the node from the server, returning
+      `$inspect()` invisibly.
+
+docker_service_collection:
+  help: *help
+  get:
+    summary: >-
+      Get a service by name or id
+    args:
+      id: >-
+        A scalar character with the network's name or id
+        (abbreviations of the id are allowed and will be resolved by
+        the docker daemon).
+
+docker_service:
+  help: *help
+  id:
+    summary: >-
+      Return the services's id
+  inspect:
+    summary: >-
+      Return detailed information about this service
+    args:
+      reload: &reload-service >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after a service has been removed.
+    cli: "service inspect"
+  name:
+    summary: >-
+      Return the service's name
+    args:
+      reload: *reload-service
+  version:
+    summary: >-
+      Return the service's version.  This is used by some other
+      methods to avoid conflicting writes.
+    args:
+      reload: *reload-service
+  reload:
+    summary: >-
+      Refresh infomation on the service from the server, returning
+      `$inspect()` invisibly.
+  tasks:
+    summary: >-
+      Fetch tasks associated with this service.  Returns a list of
+      `?docker_task` objects
+    args:
+      filters: &service-task-filters >-
+        A named character vector of filters to process on the tasks
+        list.  Available filters are the same as `$task$list()`,
+        except that `service` is not accepted (it is used internally
+        by this method).  Useful filters include `desired-state`,
+        `label`, `node`, `name` and `id`.
+  ps:
+    summary: >-
+      Get summary information about a service.
+    args:
+      resolve_names: >-
+        Resolve task and node names, from their ids?  If `FALSE`,
+        rather than do this instead only print ids.  Task "names" are
+        constructed from a combination of service name (or id) and the
+        replicate number.
+      filters: *service-task-filters
+    cli: "service ps"
+
+docker_task_collection:
+  help: *help
+  get:
+    summary: >-
+      Get a task by name or id
+    args:
+      id: >-
+        A scalar character with the network's name or id
+        (abbreviations of the id are allowed and will be resolved by
+        the docker daemon).
+
+docker_task:
+  help: *help
+  id:
+    summary: >-
+      Return the tasks's id
+  inspect:
+    summary: >-
+      Return detailed information about this task
+    args:
+      reload: &reload-task >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after a task has been removed.
+  reload:
+    summary: >-
+      Refresh infomation on the task from the server, returning
+      `$inspect()` invisibly.
+  state:
+    summary: >-
+      Retrieve task state (running, shutdown, etc).  Richer
+      information about task status is available as
+      `$inspect()$status`
+    args:
+      reload: *reload-task
+  service:
+    summary: >-
+      Return parent service
+
+docker_secret_collection:
+  help: *help
+
+docker_config_collection:
+  help: *help
+
+docker_plugin_collection:
+  help: *help
+  get:
+    summary: >-
+      Get a plugin by name or id
+    args:
+      name: "A scalar character with the plugins' name."
+
+docker_plugin:
+  help: *help
+  id:
+    summary: >-
+      Return the plugins' id
+  name:
+    summary: >-
+      Return the plugin's name
+  inspect:
+    summary: >-
+      Return detailed information about this plugin
+    args:
+      reload: &reload-plugin >-
+        Logical scalar, indicating if the information should be
+        refreshed from the daemon.  This is useful to set to
+        `FALSE` after a plugin has been removed.
+  reload:
+    summary: >-
+      Refresh infomation on the plugin from the server, returning
+      `$inspect()` invisibly.
+  is_enabled:
+    summary: >-
+      Test if plugin is enabled
+    args:
+      reload: *reload-plugin
+
+docker_types:
+  help: *help
+
+unsupported:
+  image_build_clean:
+    summary: Delete builder cache
+  secret_update:
+    summary: Update a Secret
+  task_logs:
+    summary: Get task logs
+  config_create:
+    summary: Create a config
+  config_inspect:
+    summary: Inspect a config
+  config_list:
+    summary: List configs
+  config_delete:
+    summary: Delete a config
+  config_update:
+    summary: Update a Config

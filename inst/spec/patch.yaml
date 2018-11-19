@@ -1,0 +1,317 @@
+# Without this entry, container_list will fail with a vapply error
+# because definitions$Mount$properties$Source$type is missing
+- version: ["1.25", "1.29"]
+  path: ["definitions", "Mount", "properties", "Source"]
+  value:
+    type: "string"
+
+- version: ["1.25", "1.39"]
+  path: ["paths", "/system/df", "get", "responses", "200", "schema", "properties", "Containers"]
+  replace: true
+  value:
+    $ref: "#/definitions/ContainerSummary"
+
+- version: ["1.29", "1.30"]
+  path: ["paths", "/images/load", "post", "responses", "200"]
+  value:
+    schema:
+      type: "object"
+
+# This is backported from the 1.32 spec
+- version: ["1.29", "1.31"]
+  path: ["definitions", "PortBinding"]
+  value:
+    type: "object"
+    properties:
+      HostIp:
+        type: "string"
+      HostPort:
+        type: "string"
+
+- version: ["1.29", "1.31"]
+  path: ["definitions", "NetworkConfig", "properties", "Ports"]
+  replace: true
+  value:
+    type: "object"
+    additionalProperties:
+      type: "array"
+      items:
+        "$ref": "#/definitions/PortBinding"
+
+- version: ["1.32", "1.33"]
+  path: ["definitions", "PeerNode"]
+  value:
+    type: "object"
+
+- version: ["1.25", "1.39"]
+  path: ["paths", "/system/df", "get"]
+  value:
+    produces: "application/json"
+
+- version: ["1.25", "1.39"]
+  path: ["paths", "/containers/{id}/top", "get"]
+  value:
+    produces: "application/json"
+
+- version: ["1.25", "1.39"]
+  path: ["paths", "/containers/{id}/archive", "put", "parameters",
+  "@name = inputStream", "schema"]
+  value:
+    format: "binary"
+
+- version: ["1.34", "1.36"]
+  path: ["definitions", "PeerNode"]
+  value:
+    type: object
+
+- version: ["1.29", "1.29"]
+  path: ["definitions", "TaskSpec", "properties", "Resources", "properties", "Reservation"]
+  value:
+    type: object
+
+- path: ["paths", "/swarm", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/swarm/init", "post"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/swarm/unlockkey", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/nodes", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/nodes/{id}", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/services", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/services/{id}", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/tasks", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/secrets/{id}", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/plugins/privileges", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/plugins/{name}/json", "get"]
+  value:
+    produces: "application/json"
+
+- path: ["paths", "/plugins/{name}", "delete"]
+  value:
+    produces: "application/json"
+
+- path: ["definitions", "ServiceSpec"]
+  value:
+    type: "object"
+
+- path: ["definitions", "TaskSpec", "properties", "Resources", "properties", "Reservation"]
+  value:
+    type: "object"
+
+# Feature added in 1.30, type annotation added in 1.32
+- version: ["1.30", "1.31"]
+  path: ["definitions", "SwarmSpec", "properties", "CAConfig", "properties", "ForceRotate"]
+  value:
+    type: "integer"
+
+- version: ["1.25", "1.30"]
+  path: ["definitions", "SecretSpec", "properties", "Data"]
+  value:
+    type: "string"
+
+- version: ["1.30"]
+  path: ["definitions", "ConfigSpec", "properties", "Data"]
+  value:
+    type: "string"
+
+# This one seems bad - might be worth reporting.  The server I have at
+# least is returning 'ID' rather than 'Id' for the created secret.
+# Not sure if this will persist in 1.37 onwards, or if patching it
+# here is even the correct thing to do.
+- version: ["1.36", "1.39"]
+  path: ["paths", "/secrets/create", "post", "responses", "201", "schema"]
+  replace: true
+  value:
+    type: "object"
+    properties:
+      ID:
+        type: "string"
+
+# And also for configs, which makes sense because they share a lot of
+# interface
+- version: ["1.36", "1.39"]
+  path: ["paths", "/configs/create", "post", "responses", "201", "schema"]
+  replace: true
+  value:
+    type: "object"
+    properties:
+      ID:
+        type: "string"
+
+# This one is me getting null types wrong I think - rather than looking
+- version: ["1.25", "1.39"]
+  path: ["paths", "/secrets/{id}", "delete", "produces"]
+  value: ~
+  replace: true
+
+- version: ["1.30", "1.39"]
+  path: ["paths", "/configs/{id}", "delete", "produces"]
+  value: ~
+  replace: true
+
+# NOTE: debateably belongs in stevedore.yaml, but the spec appears
+# wrong so we'll just do this all at once.
+- path: ["paths", "/services/{id}/logs", "get"]
+  value:
+    produces: "application/chunked-string"
+
+- version: ["1.29", "1.39"]
+  path: ["paths", "/tasks/{id}/logs", "get"]
+  value:
+    produces: "application/chunked-string"
+
+- version: ["1.25", "1.26"]
+  path: ["paths", "/plugins/privileges", "get", "parameters", "@name = name"]
+  value:
+    name: remote
+
+# this is pretty bad: the spec claims it will return 204 but instead
+# returns 200
+- version: ["1.25", "1.39"]
+  path: ["paths", "/plugins/pull", "post", "responses"]
+  value:
+    200:
+      description: "no error"
+
+- version: ["1.25", "1.39"]
+  path: ["paths", "/plugins/{name}", "delete", "responses", "200", "schema"]
+  value: ~
+  replace: true
+
+- version: ["1.25", "1.39"]
+  path: ["paths", "/plugins/{name}", "delete", "produces"]
+  value: ~
+  replace: true
+
+# This is duplicated from the 1.32 spec
+- version: ["1.25", "1.31"]
+  path: ["definitions"]
+  value:
+    NodeStatus:
+      description: |
+        NodeStatus represents the status of a node.
+
+        It provides the current status of the node, as seen by the manager.
+      type: "object"
+      properties:
+        State:
+          $ref: "#/definitions/NodeState"
+        Message:
+          type: "string"
+          example: ""
+        Addr:
+          description: "IP address of the node."
+          type: "string"
+          example: "172.17.0.2"
+
+    NodeState:
+      description: "NodeState represents the state of a node."
+      type: "string"
+      enum:
+        - "unknown"
+        - "down"
+        - "ready"
+        - "disconnected"
+      example: "ready"
+
+    ManagerStatus:
+      description: |
+        ManagerStatus represents the status of a manager.
+
+        It provides the current status of a node's manager component, if the
+        node is a manager.
+      x-nullable: true
+      type: "object"
+      properties:
+        Leader:
+          type: "boolean"
+          default: false
+          example: true
+        Reachability:
+          $ref: "#/definitions/Reachability"
+        Addr:
+          description: |
+            The IP address and port at which the manager is reachable.
+          type: "string"
+          example: "10.0.0.46:2377"
+
+    Reachability:
+      description: "Reachability represents the reachability of a node."
+      type: "string"
+      enum:
+        - "unknown"
+        - "unreachable"
+        - "reachable"
+      example: "reachable"
+
+- version: ["1.25", "1.31"]
+  path: ["definitions", "Node", "properties"]
+  value:
+    Status:
+      $ref: "#/definitions/NodeStatus"
+    ManagerStatus:
+      $ref: "#/definitions/ManagerStatus"
+
+
+- version: ["1.25", "1.36"]
+  path: ["paths", "/swarm/unlock", "post", "produces"]
+  value: ~
+  replace: true
+
+- version: "1.25"
+  path: ["paths", "/networks/prune", "post", "responses", "200", "schema",
+  "properties"]
+  replace: true
+  value:
+    NetworksDeleted:
+      description: "Networks that were deleted"
+      type: "array"
+      items:
+        type: "string"
+
+- version: ["1.25", "1.27"]
+  path: ["paths", "/services/{id}/update", "post", "responses", "200", "schema"]
+  value:
+    $ref: "#/definitions/ServiceUpdateResponse"
+
+- version: ["1.30", "1.31"]
+  path: ["definitions", "Node", "properties", "Description", "properties", "TLSInfo"]
+  value:
+    $ref: "#/definitions/TLSInfo"
+
+- version: ["1.37", "1.39"]
+  path: ["definitions", "PeerNode"]
+  value:
+    type: "object"
+
+- version: ["1.25", "1.39"]
+  path: ["definitions", "Secret", "properties", "Spec",]
+  value:
+    $ref: "#/definitions/SecretSpec"
