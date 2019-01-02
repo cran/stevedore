@@ -1,6 +1,6 @@
 Package: stevedore
 Title: Docker Client
-Version: 0.9.0
+Version: 0.9.1
 Description: Work with containers over the Docker API.  Rather than
     using system calls to interact with a docker client, using the
     API directly means that we can receive richer information from
@@ -21,8 +21,8 @@ Encoding: UTF-8
 ByteCompile: TRUE
 Language: en-GB
 NeedsCompilation: no
-Packaged: 2018-11-12 08:32:15 UTC; rich
+Packaged: 2019-01-02 08:33:39 UTC; rich
 Author: Rich FitzJohn [aut, cre]
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-11-19 18:30:02 UTC
+Date/Publication: 2019-01-02 11:00:02 UTC
