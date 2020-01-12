@@ -1,6 +1,6 @@
 Package: stevedore
 Title: Docker Client
-Version: 0.9.1
+Version: 0.9.3
 Description: Work with containers over the Docker API.  Rather than
     using system calls to interact with a docker client, using the
     API directly means that we can receive richer information from
@@ -15,14 +15,14 @@ BugReports: https://github.com/richfitz/stevedore/issues
 Imports: crayon, curl (>= 2.3.0), jsonlite, yaml (>= 2.1.18)
 Suggests: knitr, openssl, redux, reticulate, rmarkdown, testthat, withr
 SystemRequirements: docker
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.0
 VignetteBuilder: knitr
 Encoding: UTF-8
 ByteCompile: TRUE
 Language: en-GB
 NeedsCompilation: no
-Packaged: 2019-01-02 08:33:39 UTC; rich
+Packaged: 2020-01-12 10:30:58 UTC; rich
 Author: Rich FitzJohn [aut, cre]
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
 Repository: CRAN
-Date/Publication: 2019-01-02 11:00:02 UTC
+Date/Publication: 2020-01-12 11:20:02 UTC

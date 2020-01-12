@@ -6,9 +6,19 @@ import requests
 IS_WINDOWS_PLATFORM = (sys.platform == 'win32')
 
 if IS_WINDOWS_PLATFORM:
-    from docker.transport import NpipeAdapter as HttpAdapter
+    # See changes in
+    #   https://github.com/docker/docker-py/commit/4d7d408
+    # which is at version 3.8.0-dev and which change how the adapter
+    # is called.
+    try:
+        from docker.transport import NpipeHTTPAdapter as HttpAdapter
+    except ImportError:
+        from docker.transport import NpipeAdapter as HttpAdapter
 else:
-    from docker.transport import UnixAdapter as HttpAdapter
+    try:
+        from docker.transport import UnixHTTPAdapter as HttpAdapter
+    except ImportError:
+        from docker.transport import UnixAdapter as HttpAdapter
 
 
 def string_is_binary(x):

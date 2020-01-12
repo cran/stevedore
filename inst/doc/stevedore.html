@@ -1,301 +1,247 @@
 <!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="pandoc" />
+<title>Containers</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<meta name="author" content="Rich FitzJohn" />
-
-<meta name="date" content="2018-11-08" />
-
-<title>Using docker with stevedore</title>
-
-
-
-<style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
-}
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
   }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {  }
-@media screen {
-a.sourceLine::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+};
+</script>
+
+<!-- Styles for R syntax highlighter -->
+<style type="text/css">
+   pre .operator,
+   pre .paren {
+     color: rgb(104, 118, 135)
+   }
+
+   pre .literal {
+     color: #990073
+   }
+
+   pre .number {
+     color: #099;
+   }
+
+   pre .comment {
+     color: #998;
+     font-style: italic
+   }
+
+   pre .keyword {
+     color: #900;
+     font-weight: bold
+   }
+
+   pre .identifier {
+     color: rgb(0, 0, 0);
+   }
+
+   pre .string {
+     color: #d14;
+   }
 </style>
 
+<!-- R syntax highlighter -->
+<script type="text/javascript">
+var hljs=new function(){function m(p){return p.replace(/&/gm,"&amp;").replace(/</gm,"&lt;")}function f(r,q,p){return RegExp(q,"m"+(r.cI?"i":"")+(p?"g":""))}function b(r){for(var p=0;p<r.childNodes.length;p++){var q=r.childNodes[p];if(q.nodeName=="CODE"){return q}if(!(q.nodeType==3&&q.nodeValue.match(/\s+/))){break}}}function h(t,s){var p="";for(var r=0;r<t.childNodes.length;r++){if(t.childNodes[r].nodeType==3){var q=t.childNodes[r].nodeValue;if(s){q=q.replace(/\n/g,"")}p+=q}else{if(t.childNodes[r].nodeName=="BR"){p+="\n"}else{p+=h(t.childNodes[r])}}}if(/MSIE [678]/.test(navigator.userAgent)){p=p.replace(/\r/g,"\n")}return p}function a(s){var r=s.className.split(/\s+/);r=r.concat(s.parentNode.className.split(/\s+/));for(var q=0;q<r.length;q++){var p=r[q].replace(/^language-/,"");if(e[p]){return p}}}function c(q){var p=[];(function(s,t){for(var r=0;r<s.childNodes.length;r++){if(s.childNodes[r].nodeType==3){t+=s.childNodes[r].nodeValue.length}else{if(s.childNodes[r].nodeName=="BR"){t+=1}else{if(s.childNodes[r].nodeType==1){p.push({event:"start",offset:t,node:s.childNodes[r]});t=arguments.callee(s.childNodes[r],t);p.push({event:"stop",offset:t,node:s.childNodes[r]})}}}}return t})(q,0);return p}function k(y,w,x){var q=0;var z="";var s=[];function u(){if(y.length&&w.length){if(y[0].offset!=w[0].offset){return(y[0].offset<w[0].offset)?y:w}else{return w[0].event=="start"?y:w}}else{return y.length?y:w}}function t(D){var A="<"+D.nodeName.toLowerCase();for(var B=0;B<D.attributes.length;B++){var C=D.attributes[B];A+=" "+C.nodeName.toLowerCase();if(C.value!==undefined&&C.value!==false&&C.value!==null){A+='="'+m(C.value)+'"'}}return A+">"}while(y.length||w.length){var v=u().splice(0,1)[0];z+=m(x.substr(q,v.offset-q));q=v.offset;if(v.event=="start"){z+=t(v.node);s.push(v.node)}else{if(v.event=="stop"){var p,r=s.length;do{r--;p=s[r];z+=("</"+p.nodeName.toLowerCase()+">")}while(p!=v.node);s.splice(r,1);while(r<s.length){z+=t(s[r]);r++}}}}return z+m(x.substr(q))}function j(){function q(x,y,v){if(x.compiled){return}var u;var s=[];if(x.k){x.lR=f(y,x.l||hljs.IR,true);for(var w in x.k){if(!x.k.hasOwnProperty(w)){continue}if(x.k[w] instanceof Object){u=x.k[w]}else{u=x.k;w="keyword"}for(var r in u){if(!u.hasOwnProperty(r)){continue}x.k[r]=[w,u[r]];s.push(r)}}}if(!v){if(x.bWK){x.b="\\b("+s.join("|")+")\\s"}x.bR=f(y,x.b?x.b:"\\B|\\b");if(!x.e&&!x.eW){x.e="\\B|\\b"}if(x.e){x.eR=f(y,x.e)}}if(x.i){x.iR=f(y,x.i)}if(x.r===undefined){x.r=1}if(!x.c){x.c=[]}x.compiled=true;for(var t=0;t<x.c.length;t++){if(x.c[t]=="self"){x.c[t]=x}q(x.c[t],y,false)}if(x.starts){q(x.starts,y,false)}}for(var p in e){if(!e.hasOwnProperty(p)){continue}q(e[p].dM,e[p],true)}}function d(B,C){if(!j.called){j();j.called=true}function q(r,M){for(var L=0;L<M.c.length;L++){if((M.c[L].bR.exec(r)||[null])[0]==r){return M.c[L]}}}function v(L,r){if(D[L].e&&D[L].eR.test(r)){return 1}if(D[L].eW){var M=v(L-1,r);return M?M+1:0}return 0}function w(r,L){return L.i&&L.iR.test(r)}function K(N,O){var M=[];for(var L=0;L<N.c.length;L++){M.push(N.c[L].b)}var r=D.length-1;do{if(D[r].e){M.push(D[r].e)}r--}while(D[r+1].eW);if(N.i){M.push(N.i)}return f(O,M.join("|"),true)}function p(M,L){var N=D[D.length-1];if(!N.t){N.t=K(N,E)}N.t.lastIndex=L;var r=N.t.exec(M);return r?[M.substr(L,r.index-L),r[0],false]:[M.substr(L),"",true]}function z(N,r){var L=E.cI?r[0].toLowerCase():r[0];var M=N.k[L];if(M&&M instanceof Array){return M}return false}function F(L,P){L=m(L);if(!P.k){return L}var r="";var O=0;P.lR.lastIndex=0;var M=P.lR.exec(L);while(M){r+=L.substr(O,M.index-O);var N=z(P,M);if(N){x+=N[1];r+='<span class="'+N[0]+'">'+M[0]+"</span>"}else{r+=M[0]}O=P.lR.lastIndex;M=P.lR.exec(L)}return r+L.substr(O,L.length-O)}function J(L,M){if(M.sL&&e[M.sL]){var r=d(M.sL,L);x+=r.keyword_count;return r.value}else{return F(L,M)}}function I(M,r){var L=M.cN?'<span class="'+M.cN+'">':"";if(M.rB){y+=L;M.buffer=""}else{if(M.eB){y+=m(r)+L;M.buffer=""}else{y+=L;M.buffer=r}}D.push(M);A+=M.r}function G(N,M,Q){var R=D[D.length-1];if(Q){y+=J(R.buffer+N,R);return false}var P=q(M,R);if(P){y+=J(R.buffer+N,R);I(P,M);return P.rB}var L=v(D.length-1,M);if(L){var O=R.cN?"</span>":"";if(R.rE){y+=J(R.buffer+N,R)+O}else{if(R.eE){y+=J(R.buffer+N,R)+O+m(M)}else{y+=J(R.buffer+N+M,R)+O}}while(L>1){O=D[D.length-2].cN?"</span>":"";y+=O;L--;D.length--}var r=D[D.length-1];D.length--;D[D.length-1].buffer="";if(r.starts){I(r.starts,"")}return R.rE}if(w(M,R)){throw"Illegal"}}var E=e[B];var D=[E.dM];var A=0;var x=0;var y="";try{var s,u=0;E.dM.buffer="";do{s=p(C,u);var t=G(s[0],s[1],s[2]);u+=s[0].length;if(!t){u+=s[1].length}}while(!s[2]);if(D.length>1){throw"Illegal"}return{r:A,keyword_count:x,value:y}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:m(C)}}else{throw H}}}function g(t){var p={keyword_count:0,r:0,value:m(t)};var r=p;for(var q in e){if(!e.hasOwnProperty(q)){continue}var s=d(q,t);s.language=q;if(s.keyword_count+s.r>r.keyword_count+r.r){r=s}if(s.keyword_count+s.r>p.keyword_count+p.r){r=p;p=s}}if(r.language){p.second_best=r}return p}function i(r,q,p){if(q){r=r.replace(/^((<[^>]+>|\t)+)/gm,function(t,w,v,u){return w.replace(/\t/g,q)})}if(p){r=r.replace(/\n/g,"<br>")}return r}function n(t,w,r){var x=h(t,r);var v=a(t);var y,s;if(v){y=d(v,x)}else{return}var q=c(t);if(q.length){s=document.createElement("pre");s.innerHTML=y.value;y.value=k(q,c(s),x)}y.value=i(y.value,w,r);var u=t.className;if(!u.match("(\\s|^)(language-)?"+v+"(\\s|$)")){u=u?(u+" "+v):v}if(/MSIE [678]/.test(navigator.userAgent)&&t.tagName=="CODE"&&t.parentNode.tagName=="PRE"){s=t.parentNode;var p=document.createElement("div");p.innerHTML="<pre><code>"+y.value+"</code></pre>";t=p.firstChild.firstChild;p.firstChild.cN=s.cN;s.parentNode.replaceChild(p.firstChild,s)}else{t.innerHTML=y.value}t.className=u;t.result={language:v,kw:y.keyword_count,re:y.r};if(y.second_best){t.second_best={language:y.second_best.language,kw:y.second_best.keyword_count,re:y.second_best.r}}}function o(){if(o.called){return}o.called=true;var r=document.getElementsByTagName("pre");for(var p=0;p<r.length;p++){var q=b(r[p]);if(q){n(q,hljs.tabReplace)}}}function l(){if(window.addEventListener){window.addEventListener("DOMContentLoaded",o,false);window.addEventListener("load",o,false)}else{if(window.attachEvent){window.attachEvent("onload",o)}else{window.onload=o}}}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=n;this.initHighlighting=o;this.initHighlightingOnLoad=l;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="\\b(0[xX][a-fA-F0-9]+|(\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.ER="(?![\\s\\S])";this.BE={b:"\\\\.",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(r,s){var p={};for(var q in r){p[q]=r[q]}if(s){for(var q in s){p[q]=s[q]}}return p}}();hljs.LANGUAGES.cpp=function(){var a={keyword:{"false":1,"int":1,"float":1,"while":1,"private":1,"char":1,"catch":1,"export":1,virtual:1,operator:2,sizeof:2,dynamic_cast:2,typedef:2,const_cast:2,"const":1,struct:1,"for":1,static_cast:2,union:1,namespace:1,unsigned:1,"long":1,"throw":1,"volatile":2,"static":1,"protected":1,bool:1,template:1,mutable:1,"if":1,"public":1,friend:2,"do":1,"return":1,"goto":1,auto:1,"void":2,"enum":1,"else":1,"break":1,"new":1,extern:1,using:1,"true":1,"class":1,asm:1,"case":1,typeid:1,"short":1,reinterpret_cast:2,"default":1,"double":1,register:1,explicit:1,signed:1,typename:1,"try":1,"this":1,"switch":1,"continue":1,wchar_t:1,inline:1,"delete":1,alignof:1,char16_t:1,char32_t:1,constexpr:1,decltype:1,noexcept:1,nullptr:1,static_assert:1,thread_local:1,restrict:1,_Bool:1,complex:1},built_in:{std:1,string:1,cin:1,cout:1,cerr:1,clog:1,stringstream:1,istringstream:1,ostringstream:1,auto_ptr:1,deque:1,list:1,queue:1,stack:1,vector:1,map:1,set:1,bitset:1,multiset:1,multimap:1,unordered_set:1,unordered_map:1,unordered_multiset:1,unordered_multimap:1,array:1,shared_ptr:1}};return{dM:{k:a,i:"</",c:[hljs.CLCM,hljs.CBLCLM,hljs.QSM,{cN:"string",b:"'\\\\?.",e:"'",i:"."},{cN:"number",b:"\\b(\\d+(\\.\\d*)?|\\.\\d+)(u|U|l|L|ul|UL|f|F)"},hljs.CNM,{cN:"preprocessor",b:"#",e:"$"},{cN:"stl_container",b:"\\b(deque|list|queue|stack|vector|map|set|bitset|multiset|multimap|unordered_map|unordered_set|unordered_multiset|unordered_multimap|array)\\s*<",e:">",k:a,r:10,c:["self"]}]}}}();hljs.LANGUAGES.r={dM:{c:[hljs.HCM,{cN:"number",b:"\\b0[xX][0-9a-fA-F]+[Li]?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+(?:[eE][+\\-]?\\d*)?L\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\b\\d+\\.(?!\\d)(?:i\\b)?",e:hljs.IMMEDIATE_RE,r:1},{cN:"number",b:"\\b\\d+(?:\\.\\d*)?(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"number",b:"\\.\\d+(?:[eE][+\\-]?\\d*)?i?\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"keyword",b:"(?:tryCatch|library|setGeneric|setGroupGeneric)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\.",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\.\\.\\d+(?![\\w.])",e:hljs.IMMEDIATE_RE,r:10},{cN:"keyword",b:"\\b(?:function)",e:hljs.IMMEDIATE_RE,r:2},{cN:"keyword",b:"(?:if|in|break|next|repeat|else|for|return|switch|while|try|stop|warning|require|attach|detach|source|setMethod|setClass)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"literal",b:"(?:NA|NA_integer_|NA_real_|NA_character_|NA_complex_)\\b",e:hljs.IMMEDIATE_RE,r:10},{cN:"literal",b:"(?:NULL|TRUE|FALSE|T|F|Inf|NaN)\\b",e:hljs.IMMEDIATE_RE,r:1},{cN:"identifier",b:"[a-zA-Z.][a-zA-Z0-9._]*\\b",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"<\\-(?!\\s*\\d)",e:hljs.IMMEDIATE_RE,r:2},{cN:"operator",b:"\\->|<\\-",e:hljs.IMMEDIATE_RE,r:1},{cN:"operator",b:"%%|~",e:hljs.IMMEDIATE_RE},{cN:"operator",b:">=|<=|==|!=|\\|\\||&&|=|\\+|\\-|\\*|/|\\^|>|<|!|&|\\||\\$|:",e:hljs.IMMEDIATE_RE,r:0},{cN:"operator",b:"%",e:"%",i:"\\n",r:1},{cN:"identifier",b:"`",e:"`",r:0},{cN:"string",b:'"',e:'"',c:[hljs.BE],r:0},{cN:"string",b:"'",e:"'",c:[hljs.BE],r:0},{cN:"paren",b:"[[({\\])}]",e:hljs.IMMEDIATE_RE,r:0}]}};
+hljs.initHighlightingOnLoad();
+</script>
 
 
-<style type="text/css">body {
-background-color: #fff;
-margin: 1em auto;
-max-width: 700px;
-overflow: visible;
-padding-left: 2em;
-padding-right: 2em;
-font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 14px;
-line-height: 1.35;
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
 }
-#header {
-text-align: center;
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
 }
-#TOC {
-clear: both;
-margin: 0 0 10px 10px;
-padding: 4px;
-width: 400px;
-border: 1px solid #CCCCCC;
-border-radius: 5px;
-background-color: #f6f6f6;
-font-size: 13px;
-line-height: 1.3;
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
 }
-#TOC .toctitle {
-font-weight: bold;
-font-size: 15px;
-margin-left: 5px;
+
+h1 {
+   font-size:2.2em;
 }
-#TOC ul {
-padding-left: 40px;
-margin-left: -1.5em;
-margin-top: 5px;
-margin-bottom: 5px;
+
+h2 {
+   font-size:1.8em;
 }
-#TOC ul ul {
-margin-left: -2em;
+
+h3 {
+   font-size:1.4em;
 }
-#TOC li {
-line-height: 16px;
+
+h4 {
+   font-size:1.0em;
 }
-table {
-margin: 1em auto;
-border-width: 1px;
-border-color: #DDDDDD;
-border-style: outset;
-border-collapse: collapse;
+
+h5 {
+   font-size:0.9em;
 }
-table th {
-border-width: 2px;
-padding: 5px;
-border-style: inset;
+
+h6 {
+   font-size:0.8em;
 }
-table td {
-border-width: 1px;
-border-style: inset;
-line-height: 18px;
-padding: 5px 5px;
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
 }
-table, table th, table td {
-border-left-style: none;
-border-right-style: none;
-}
-table thead, table tr.even {
-background-color: #f7f7f7;
-}
-p {
-margin: 0.5em 0;
-}
-blockquote {
-background-color: #f6f6f6;
-padding: 0.25em 0.75em;
-}
-hr {
-border-style: solid;
-border: none;
-border-top: 1px solid #777;
-margin: 28px 0;
-}
-dl {
-margin-left: 0;
-}
-dl dd {
-margin-bottom: 13px;
-margin-left: 13px;
-}
-dl dt {
-font-weight: bold;
-}
-ul {
-margin-top: 0;
-}
-ul li {
-list-style: circle outside;
-}
-ul ul {
-margin-bottom: 0;
-}
-pre, code {
-background-color: #f7f7f7;
-border-radius: 3px;
-color: #333;
-white-space: pre-wrap; 
+
+pre, img {
+  max-width: 100%;
 }
 pre {
-border-radius: 3px;
-margin: 5px 0px 10px 0px;
-padding: 10px;
+  overflow-x: auto;
 }
-pre:not([class]) {
-background-color: #f7f7f7;
+pre code {
+   display: block; padding: 0.5em;
 }
-code {
-font-family: Consolas, Monaco, 'Courier New', monospace;
-font-size: 85%;
-}
-p > code, li > code {
-padding: 2px 0px;
-}
-div.figure {
-text-align: center;
-}
-img {
-background-color: #FFFFFF;
-padding: 2px;
-border: 1px solid #DDDDDD;
-border-radius: 3px;
-border: 1px solid #CCCCCC;
-margin: 0 5px;
-}
-h1 {
-margin-top: 0;
-font-size: 35px;
-line-height: 40px;
-}
-h2 {
-border-bottom: 4px solid #f7f7f7;
-padding-top: 10px;
-padding-bottom: 2px;
-font-size: 145%;
-}
-h3 {
-border-bottom: 2px solid #f7f7f7;
-padding-top: 10px;
-font-size: 120%;
-}
-h4 {
-border-bottom: 1px solid #f7f7f7;
-margin-left: 8px;
-font-size: 105%;
-}
-h5, h6 {
-border-bottom: 1px solid #ccc;
-font-size: 105%;
-}
-a {
-color: #0033dd;
-text-decoration: none;
-}
-a:hover {
-color: #6666ff; }
-a:visited {
-color: #800080; }
-a:visited:hover {
-color: #BB00BB; }
-a[href^="http:"] {
-text-decoration: underline; }
-a[href^="https:"] {
-text-decoration: underline; }
 
-code > span.kw { color: #555; font-weight: bold; } 
-code > span.dt { color: #902000; } 
-code > span.dv { color: #40a070; } 
-code > span.bn { color: #d14; } 
-code > span.fl { color: #d14; } 
-code > span.ch { color: #d14; } 
-code > span.st { color: #d14; } 
-code > span.co { color: #888888; font-style: italic; } 
-code > span.ot { color: #007020; } 
-code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
 </style>
+
+
 
 </head>
 
 <body>
+<p><code>stevedore</code> is an R package for interacting with docker from R.
+With <code>stevedore</code> you can</p>
 
-
-
-
-<h1 class="title toc-ignore">Using docker with stevedore</h1>
-<h4 class="author"><em>Rich FitzJohn</em></h4>
-<h4 class="date"><em>2018-11-08</em></h4>
-
-
-
-<p><code>stevedore</code> is an R package for interacting with docker from R. With <code>stevedore</code> you can</p>
 <ul>
 <li>create, run, manage, remove and destroy containers</li>
 <li>build, pull, manage and remove images</li>
 <li>create, destroy and interact with docker networks</li>
 <li>create, destroy and interact with docker volumes</li>
 </ul>
-<p>Almost everything that can be done with the docker command line client (the main exception being that is not possible to send input to a container as if you were on a terminal).</p>
-<p><code>stevedore</code> directly interacts with the docker server over its HTTP API. This gives a more direct access to docker than going via the command line.</p>
-<p>This vignette quickly walks through the core features of the package. Because <code>stevedore</code> wraps the docker API directly there are many more arguments that can be used than are covered here. But this covers the core use.</p>
-<p>The main function in the package is <code>docker_client</code>; this will construct an object with which we can talk with the docker server. By default this will look at a number of environment variables and try to connect to the correct daemon. See <code>?docker_client</code> for information on controlling creating the connection.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">docker &lt;-<span class="st"> </span>stevedore<span class="op">::</span><span class="kw">docker_client</span>()</a></code></pre></div>
-<p>The client object looks a lot like an <a href="https://github.com/wch/R6"><code>R6</code></a> object (though it is implemented differently because the interface here is automatically generated in ways that don’t play nicely with R6). But if you are at all familiar with R6 objects it should seem quite familiar.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">docker</a></code></pre></div>
+
+<p>Almost everything that can be done with the docker command line
+client (the main exception being that is not possible to send input
+to a container as if you were on a terminal).</p>
+
+<p><code>stevedore</code> directly interacts with the docker server over its HTTP
+API.  This gives a more direct access to docker than going via the
+command line.</p>
+
+<p>This vignette quickly walks through the core features of the
+package.  Because <code>stevedore</code> wraps the docker API directly there
+are many more arguments that can be used than are covered here.
+But this covers the core use.</p>
+
+<p>The main function in the package is <code>docker_client</code>; this will
+construct an object with which we can talk with the docker server.
+By default this will look at a number of environment variables and
+try to connect to the correct daemon.  See <code>?docker_client</code> for
+information on controlling creating the connection.</p>
+
+<pre><code class="r">docker &lt;- stevedore::docker_client()
+</code></pre>
+
+<p>The client object looks a lot like an
+<a href="https://github.com/wch/R6"><code>R6</code></a> object (though it is implemented
+differently because the interface here is automatically generated
+in ways that don&#39;t play nicely with R6).  But if you are at all
+familiar with R6 objects it should seem quite familiar.</p>
+
+<pre><code class="r">docker
+</code></pre>
+
 <pre><code>## &lt;docker_client&gt;
 ##   config: Manage docker swarm configs
 ##   container: Work with docker containers
@@ -321,16 +267,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##   ping()
 ##   request(verb, path, query = NULL, body = NULL, headers = NULL,
 ##       stream = NULL)
-##   version()</code></pre>
-<p>Each function call (e.g., <code>ping</code>) is callable by accessing with <code>$</code>, such as</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">docker<span class="op">$</span><span class="kw">ping</span>()</a></code></pre></div>
+##   version()
+</code></pre>
+
+<p>Each function call (e.g., <code>ping</code>) is callable by accessing with
+<code>$</code>, such as</p>
+
+<pre><code class="r">docker$ping()
+</code></pre>
+
 <pre><code>## [1] &quot;OK&quot;
 ## attr(,&quot;api_version&quot;)
-## [1] &quot;1.37&quot;
+## [1] &quot;1.39&quot;
+## attr(,&quot;buildkit_version&quot;)
+## [1] NA
 ## attr(,&quot;docker_experimental&quot;)
-## [1] TRUE</code></pre>
-<p>In addition there are “collection” objects (e.g., <code>container</code>) that are accessed using <code>$</code>, like a directory structure</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">docker<span class="op">$</span>container</a></code></pre></div>
+## [1] FALSE
+</code></pre>
+
+<p>In addition there are &ldquo;collection&rdquo; objects (e.g., <code>container</code>)
+that are accessed using <code>$</code>, like a directory structure</p>
+
+<pre><code class="r">docker$container
+</code></pre>
+
 <pre><code>## &lt;docker_container_collection&gt;
 ##   create(image, cmd = NULL, hostname = NULL, domainname = NULL,
 ##       user = NULL, attach_stdin = NULL, attach_stdout = NULL,
@@ -347,16 +307,30 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##   prune(filters = NULL)
 ##   remove(id, delete_volumes = NULL, force = NULL, link = NULL)
 ##   run(image, cmd = NULL, ..., detach = FALSE, rm = FALSE,
-##       stream = stdout(), host_config = NULL)</code></pre>
-<p>The interface is designed similarly to the command line docker client (and to the Python docker client), where container commands are within the <code>container</code> collection and image commands are within the <code>image</code> collection and so on (the main difference with the command line client is that the container commands are not at the top level, so it is <code>docker$container$run(...)</code> not <code>docker$run(...)</code>).</p>
-<p>To run a container, the <code>docker$container$run</code> command follows the semantics of the command line client and will</p>
+##       stream = stdout(), host_config = NULL)
+</code></pre>
+
+<p>The interface is designed similarly to the command line docker
+client (and to the Python docker client), where container commands
+are within the <code>container</code> collection and image commands are within
+the <code>image</code> collection and so on (the main difference with the
+command line client is that the container commands are not at the
+top level, so it is <code>docker$container$run(...)</code> not
+<code>docker$run(...)</code>).</p>
+
+<p>To run a container, the <code>docker$container$run</code> command follows the
+semantics of the command line client and will</p>
+
 <ul>
 <li>pull a image if it does not exist</li>
 <li>create the container</li>
 <li>run the container</li>
 <li>fetch the logs</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">res &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;hello-world&quot;</span>)</a></code></pre></div>
+
+<pre><code class="r">res &lt;- docker$container$run(&quot;hello-world&quot;)
+</code></pre>
+
 <pre><code>## O&gt;
 ## O&gt; Hello from Docker!
 ## O&gt; This message shows that your installation appears to be working correctly.
@@ -378,12 +352,22 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt;
 ## O&gt; For more examples and ideas, visit:
 ## O&gt;  https://docs.docker.com/get-started/
-## O&gt;</code></pre>
+## O&gt;
+</code></pre>
+
 <p>This returns a list with two elements:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">names</span>(res)</a></code></pre></div>
-<pre><code>## [1] &quot;container&quot; &quot;logs&quot;</code></pre>
-<p>The “logs” element is the logs themselves:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">res<span class="op">$</span>logs</a></code></pre></div>
+
+<pre><code class="r">names(res)
+</code></pre>
+
+<pre><code>## [1] &quot;container&quot; &quot;logs&quot;
+</code></pre>
+
+<p>The &ldquo;logs&rdquo; element is the logs themselves:</p>
+
+<pre><code class="r">res$logs
+</code></pre>
+
 <pre><code>## O&gt;
 ## O&gt; Hello from Docker!
 ## O&gt; This message shows that your installation appears to be working correctly.
@@ -405,10 +389,19 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt;
 ## O&gt; For more examples and ideas, visit:
 ## O&gt;  https://docs.docker.com/get-started/
-## O&gt;</code></pre>
-<p>This is a <code>docker_stream</code> object and codes the output stream using the <code>stream</code> attribute (it can otherwise be treated as a character vector).</p>
-<p>The “container” element is an object that can be used to interact with a container</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1">res<span class="op">$</span>container</a></code></pre></div>
+## O&gt;
+</code></pre>
+
+<p>This is a <code>docker_stream</code> object and codes the output stream using
+the <code>stream</code> attribute (it can otherwise be treated as a character
+vector).</p>
+
+<p>The &ldquo;container&rdquo; element is an object that can be used to interact
+with a container</p>
+
+<pre><code class="r">res$container
+</code></pre>
+
 <pre><code>## &lt;docker_container&gt;
 ##   commit(repo = NULL, tag = NULL, author = NULL, changes = NULL,
 ##       comment = NULL, pause = NULL, hostname = NULL, domainname = NULL,
@@ -470,9 +463,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##       ulimits = NULL, cpu_count = NULL, cpu_percent = NULL,
 ##       io_maximum_iops = NULL, io_maximum_bandwidth = NULL,
 ##       restart_policy = NULL)
-##   wait(condition = NULL)</code></pre>
-<p>For example the function <code>path_stat</code> gets some information about paths on the container:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">res<span class="op">$</span>container<span class="op">$</span><span class="kw">path_stat</span>(<span class="st">&quot;hello&quot;</span>)</a></code></pre></div>
+##   wait(condition = NULL)
+</code></pre>
+
+<p>For example the function <code>path_stat</code> gets some information about
+paths on the container:</p>
+
+<pre><code class="r">res$container$path_stat(&quot;hello&quot;)
+</code></pre>
+
 <pre><code>## $name
 ## [1] &quot;hello&quot;
 ##
@@ -483,13 +482,18 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] 509
 ##
 ## $mtime
-## [1] &quot;2018-09-07T19:25:35Z&quot;
+## [1] &quot;2019-01-01T01:27:56Z&quot;
 ##
 ## $linkTarget
-## [1] &quot;&quot;</code></pre>
+## [1] &quot;&quot;
+</code></pre>
+
 <p>The image can also be returned</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">img &lt;-<span class="st"> </span>res<span class="op">$</span>container<span class="op">$</span><span class="kw">image</span>()</a>
-<a class="sourceLine" id="cb18-2" title="2">img</a></code></pre></div>
+
+<pre><code class="r">img &lt;- res$container$image()
+img
+</code></pre>
+
 <pre><code>## &lt;docker_image&gt;
 ##   export()
 ##   help(help_type = getOption(&quot;help_type&quot;))
@@ -503,25 +507,37 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##   short_id()
 ##   tag(repo, tag = NULL)
 ##   tags(reload = TRUE)
-##   untag(repo_tag)</code></pre>
-<p>which is another object with methods that can be invoked to find out about the image, e.g.:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1">img<span class="op">$</span><span class="kw">history</span>()</a></code></pre></div>
+##   untag(repo_tag)
+</code></pre>
+
+<p>which is another object with methods that can be invoked to find
+out about the image, e.g.:</p>
+
+<pre><code class="r">img$history()
+</code></pre>
+
 <pre><code>##                                                                        id
-## 1 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+## 1 sha256:fce289e99eb9bca977dae136fbe2a82b6b7d4c372474c9235adc1741675f587e
 ## 2                                                               &lt;missing&gt;
 ##      created
-## 1 1536348339
-## 2 1536348339
+## 1 1546306167
+## 2 1546306167
 ##                                                                                           created_by
 ## 1                                                                  /bin/sh -c #(nop)  CMD [&quot;/hello&quot;]
-## 2 /bin/sh -c #(nop) COPY file:9824c33ef192ac944822908370af9f04ab049bfa5c10724e4f727206f5167094 in /
+## 2 /bin/sh -c #(nop) COPY file:f77490f70ce51da25bd21bfc30cb5e1a24b2b65eb37d4af0c327ddc24f0986a6 in /
 ##           tags size comment
 ## 1 hello-wo....    0
-## 2              1840</code></pre>
-<div id="containers" class="section level2">
+## 2              1840
+</code></pre>
+
 <h2>Containers</h2>
-<p>The <code>$container</code> object includes methods for interacting with containers:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">docker<span class="op">$</span>container</a></code></pre></div>
+
+<p>The <code>$container</code> object includes methods for interacting with
+containers:</p>
+
+<pre><code class="r">docker$container
+</code></pre>
+
 <pre><code>## &lt;docker_container_collection&gt;
 ##   create(image, cmd = NULL, hostname = NULL, domainname = NULL,
 ##       user = NULL, attach_stdin = NULL, attach_stdout = NULL,
@@ -538,10 +554,16 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##   prune(filters = NULL)
 ##   remove(id, delete_volumes = NULL, force = NULL, link = NULL)
 ##   run(image, cmd = NULL, ..., detach = FALSE, rm = FALSE,
-##       stream = stdout(), host_config = NULL)</code></pre>
-<p><code>$create</code> creates a new container (similar to <code>docker container create</code> on the command line) but does not start it.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1">x &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;hello-world&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;hello-stevedore&quot;</span>)</a>
-<a class="sourceLine" id="cb24-2" title="2">x</a></code></pre></div>
+##       stream = stdout(), host_config = NULL)
+</code></pre>
+
+<p><code>$create</code> creates a new container (similar to <code>docker container
+create</code> on the command line) but does not start it.</p>
+
+<pre><code class="r">x &lt;- docker$container$create(&quot;hello-world&quot;, name = &quot;hello-stevedore&quot;)
+x
+</code></pre>
+
 <pre><code>## &lt;docker_container&gt;
 ##   commit(repo = NULL, tag = NULL, author = NULL, changes = NULL,
 ##       comment = NULL, pause = NULL, hostname = NULL, domainname = NULL,
@@ -603,72 +625,133 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##       ulimits = NULL, cpu_count = NULL, cpu_percent = NULL,
 ##       io_maximum_iops = NULL, io_maximum_bandwidth = NULL,
 ##       restart_policy = NULL)
-##   wait(condition = NULL)</code></pre>
-<p><code>$get</code> creates a <code>docker_container</code> object from an container id or name:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">y &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">get</span>(<span class="st">&quot;hello-stevedore&quot;</span>)</a>
-<a class="sourceLine" id="cb26-2" title="2">x<span class="op">$</span><span class="kw">id</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;5254c58774a8687c9d7faddf5c2b1de03007701dc961959e432c5018e2f17a84&quot;</code></pre>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">y<span class="op">$</span><span class="kw">id</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;5254c58774a8687c9d7faddf5c2b1de03007701dc961959e432c5018e2f17a84&quot;</code></pre>
-<p><code>$list()</code> lists containers (like <code>docker list</code> on the command line) - by default showing only running containers</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">list</span>()</a></code></pre></div>
+##   wait(condition = NULL)
+</code></pre>
+
+<p><code>$get</code> creates a <code>docker_container</code> object from an container id or
+name:</p>
+
+<pre><code class="r">y &lt;- docker$container$get(&quot;hello-stevedore&quot;)
+x$id()
+</code></pre>
+
+<pre><code>## [1] &quot;25ba2590b21fac453aec605af5af7f1595d2169e1324254d97f5a08701b59e6c&quot;
+</code></pre>
+
+<pre><code class="r">y$id()
+</code></pre>
+
+<pre><code>## [1] &quot;25ba2590b21fac453aec605af5af7f1595d2169e1324254d97f5a08701b59e6c&quot;
+</code></pre>
+
+<p><code>$list()</code> lists containers (like <code>docker list</code> on the command line)</p>
+
+<ul>
+<li>by default showing only running containers</li>
+</ul>
+
+<pre><code class="r">docker$container$list()
+</code></pre>
+
 <pre><code>##  [1] id               names            image            image_id
 ##  [5] command          created          ports            size_rw
 ##  [9] size_root_fs     labels           state            status
 ## [13] host_config      network_settings mounts           name
-## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">list</span>(<span class="dt">all =</span> <span class="ot">TRUE</span>, <span class="dt">limit =</span> <span class="dv">2</span>)</a></code></pre></div>
+## &lt;0 rows&gt; (or 0-length row.names)
+</code></pre>
+
+<pre><code class="r">docker$container$list(all = TRUE, limit = 2)
+</code></pre>
+
 <pre><code>##                                                                 id
-## 1 5254c58774a8687c9d7faddf5c2b1de03007701dc961959e432c5018e2f17a84
-## 2 50f42ded4f3e99a62ed063053a903bfe31b885df1a0da2381daa3519b98e2021
+## 1 25ba2590b21fac453aec605af5af7f1595d2169e1324254d97f5a08701b59e6c
+## 2 e414940048abbea2a66c33fb5191cc881764955ae0b9110ab48ce29cc29ddcce
 ##          names
 ## 1 hello-st....
-## 2 festive_....
+## 2 frosty_b....
 ##                                                                     image
 ## 1                                                             hello-world
-## 2 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+## 2 sha256:fce289e99eb9bca977dae136fbe2a82b6b7d4c372474c9235adc1741675f587e
 ##                                                                  image_id
-## 1 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
-## 2 sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f
+## 1 sha256:fce289e99eb9bca977dae136fbe2a82b6b7d4c372474c9235adc1741675f587e
+## 2 sha256:fce289e99eb9bca977dae136fbe2a82b6b7d4c372474c9235adc1741675f587e
 ##   command    created        ports size_rw size_root_fs labels   state
-## 1  /hello 1541671085 characte....      NA           NA        created
-## 2  /hello 1541671084 characte....      NA           NA         exited
-##                              status host_config network_settings
-## 1                           Created     default     list(bri....
-## 2 Exited (0) Less than a second ago     default     list(bri....
-##         mounts            name
-## 1 characte.... hello-stevedore
-## 2 characte....   festive_nobel</code></pre>
+## 1  /hello 1578823525 characte....      NA           NA        created
+## 2  /hello 1578823523 characte....      NA           NA         exited
+##                    status host_config network_settings       mounts
+## 1                 Created     default     list(bri.... characte....
+## 2 Exited (0) 1 second ago     default     list(bri.... characte....
+##              name
+## 1 hello-stevedore
+## 2   frosty_banzai
+</code></pre>
+
 <p><code>$remove()</code> removes a container by name or id:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">remove</span>(<span class="st">&quot;hello-stevedore&quot;</span>)</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<p><code>$prune()</code> removes non-running containers (i.e., containers that have exited or containers that have been created but not yet started)</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">prune</span>()</a></code></pre></div>
+
+<pre><code class="r">docker$container$remove(&quot;hello-stevedore&quot;)
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<p><code>$prune()</code> removes non-running containers (i.e., containers that
+have exited or containers that have been created but not yet
+started)</p>
+
+<pre><code class="r">docker$container$prune()
+</code></pre>
+
 <pre><code>## $containers_deleted
-## [1] &quot;50f42ded4f3e99a62ed063053a903bfe31b885df1a0da2381daa3519b98e2021&quot;
+## [1] &quot;e414940048abbea2a66c33fb5191cc881764955ae0b9110ab48ce29cc29ddcce&quot;
 ##
 ## $space_reclaimed
-## [1] 0</code></pre>
-<div id="working-with-containers" class="section level3">
+## [1] 0
+</code></pre>
+
 <h3>Working with containers</h3>
-<p>After creating a container object, there are many more methods to use - all apply to the individual container</p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1">x &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;richfitz/iterate&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;1000&quot;</span>, <span class="st">&quot;1&quot;</span>))</a></code></pre></div>
-<p>Most are analogues of similarly named <code>docker</code> command line functions.</p>
-<p>First, there are some basic query methods - <code>$id()</code>, <code>$name()</code> and <code>$labels()</code></p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1">x<span class="op">$</span><span class="kw">id</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;eff11ac84d9e5645e2d7735f395244ad8eecd836501a8b1b12b8ae181be6ba03&quot;</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1">x<span class="op">$</span><span class="kw">name</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;elastic_leakey&quot;</code></pre>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1">x<span class="op">$</span><span class="kw">labels</span>()</a></code></pre></div>
+
+<p>After creating a container object, there are many more methods to
+use - all apply to the individual container</p>
+
+<pre><code class="r">x &lt;- docker$container$create(&quot;richfitz/iterate&quot;, c(&quot;1000&quot;, &quot;1&quot;))
+</code></pre>
+
+<p>Most are analogues of similarly named <code>docker</code> command line
+functions.</p>
+
+<p>First, there are some basic query methods - <code>$id()</code>, <code>$name()</code> and
+<code>$labels()</code></p>
+
+<pre><code class="r">x$id()
+</code></pre>
+
+<pre><code>## [1] &quot;b553018482d2e4119e20c9ccc54fd7a14e6aa7843f630a5266548f31d755211d&quot;
+</code></pre>
+
+<pre><code class="r">x$name()
+</code></pre>
+
+<pre><code>## [1] &quot;angry_snyder&quot;
+</code></pre>
+
+<pre><code class="r">x$labels()
+</code></pre>
+
 <pre><code>## stevedore_version
-##           &quot;0.0.1&quot;</code></pre>
-<p>More detailed information (<strong>much</strong> more detailed) can be retrieved with the <code>$inspect()</code> method</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1">x<span class="op">$</span><span class="kw">inspect</span>()</a></code></pre></div>
+##           &quot;0.0.1&quot;
+</code></pre>
+
+<p>More detailed information (<strong>much</strong> more detailed) can be retrieved
+with the <code>$inspect()</code> method</p>
+
+<pre><code class="r">x$inspect()
+</code></pre>
+
 <pre><code>## $id
-## [1] &quot;eff11ac84d9e5645e2d7735f395244ad8eecd836501a8b1b12b8ae181be6ba03&quot;
+## [1] &quot;b553018482d2e4119e20c9ccc54fd7a14e6aa7843f630a5266548f31d755211d&quot;
 ##
 ## $created
-## [1] &quot;2018-11-08T09:58:05.7154705Z&quot;
+## [1] &quot;2020-01-12T10:05:25.3062459Z&quot;
 ##
 ## $path
 ## [1] &quot;/usr/local/bin/iterate&quot;
@@ -712,7 +795,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##
 ##
 ## $image
-## [1] &quot;sha256:c3bca7c53b2e367ad0ceef5b94d2a02bbb21f881a49c3032165d6c85a8c71d23&quot;
+## [1] &quot;sha256:56b0d98ceb5a402ea61c63ab94a8e7f305cde36e3aa8f080a0b7ab1a8a659e7c&quot;
 ##
 ## $resolv_conf_path
 ## [1] &quot;&quot;
@@ -730,7 +813,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## NULL
 ##
 ## $name
-## [1] &quot;/elastic_leakey&quot;
+## [1] &quot;/angry_snyder&quot;
 ##
 ## $restart_count
 ## [1] 0
@@ -748,7 +831,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] &quot;&quot;
 ##
 ## $exec_ids
-## [1] NA
+## character(0)
 ##
 ## $host_config
 ## $host_config$cpu_shares
@@ -968,6 +1051,16 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## $host_config$isolation
 ## [1] &quot;&quot;
 ##
+## $host_config$masked_paths
+##  [1] &quot;/proc/asound&quot;        &quot;/proc/acpi&quot;          &quot;/proc/kcore&quot;
+##  [4] &quot;/proc/keys&quot;          &quot;/proc/latency_stats&quot; &quot;/proc/timer_list&quot;
+##  [7] &quot;/proc/timer_stats&quot;   &quot;/proc/sched_debug&quot;   &quot;/proc/scsi&quot;
+## [10] &quot;/sys/firmware&quot;
+##
+## $host_config$readonly_paths
+## [1] &quot;/proc/bus&quot;           &quot;/proc/fs&quot;            &quot;/proc/irq&quot;
+## [4] &quot;/proc/sys&quot;           &quot;/proc/sysrq-trigger&quot;
+##
 ##
 ## $graph_driver
 ## $graph_driver$name
@@ -975,13 +1068,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##
 ## $graph_driver$data
 ##                                                                                                                                                                                                                                                                                           lower_dir
-## &quot;/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5-init/diff:/var/lib/docker/overlay2/0f637fe5156e7f7bd2a628b24174f276c6ec9e8a3723ff4b64b31851ad7828bd/diff:/var/lib/docker/overlay2/552f07f3a7c097bea8e9f21926b47499928906f70793411a3b0932104ef0e4a7/diff&quot;
+## &quot;/var/lib/docker/overlay2/2ac2803a954a813a808e9c1d1f63edf0153ef0dbc109d1c12db372dc2c1104d7-init/diff:/var/lib/docker/overlay2/530d1f73dec177ad03a0ee31ad04d0802bf29925cd2eed2b8e5f49258c6824a3/diff:/var/lib/docker/overlay2/e1a21604d525ede2c5e9e6d59ac7dceb33bc7469ad98cc9997477a38c310305c/diff&quot;
 ##                                                                                                                                                                                                                                                                                          merged_dir
-##                                                                                                                                                                                                  &quot;/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5/merged&quot;
+##                                                                                                                                                                                                  &quot;/var/lib/docker/overlay2/2ac2803a954a813a808e9c1d1f63edf0153ef0dbc109d1c12db372dc2c1104d7/merged&quot;
 ##                                                                                                                                                                                                                                                                                           upper_dir
-##                                                                                                                                                                                                    &quot;/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5/diff&quot;
+##                                                                                                                                                                                                    &quot;/var/lib/docker/overlay2/2ac2803a954a813a808e9c1d1f63edf0153ef0dbc109d1c12db372dc2c1104d7/diff&quot;
 ##                                                                                                                                                                                                                                                                                            work_dir
-##                                                                                                                                                                                                    &quot;/var/lib/docker/overlay2/3c60895de83656a980a47b35e44be35f066805ab19c6d6971b4715127dbf47b5/work&quot;
+##                                                                                                                                                                                                    &quot;/var/lib/docker/overlay2/2ac2803a954a813a808e9c1d1f63edf0153ef0dbc109d1c12db372dc2c1104d7/work&quot;
 ##
 ##
 ## $size_rw
@@ -997,7 +1090,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##
 ## $config
 ## $config$hostname
-## [1] &quot;eff11ac84d9e&quot;
+## [1] &quot;b553018482d2&quot;
 ##
 ## $config$domainname
 ## [1] &quot;&quot;
@@ -1166,9 +1259,15 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] &quot;&quot;
 ##
 ## $network_settings$networks$bridge$driver_opts
-## NULL</code></pre>
-<p>The image used by a container can be retrieved with the <code>$image()</code> method</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb47-1" title="1">x<span class="op">$</span><span class="kw">image</span>()</a></code></pre></div>
+## NULL
+</code></pre>
+
+<p>The image used by a container can be retrieved with the <code>$image()</code>
+method</p>
+
+<pre><code class="r">x$image()
+</code></pre>
+
 <pre><code>## &lt;docker_image&gt;
 ##   export()
 ##   help(help_type = getOption(&quot;help_type&quot;))
@@ -1182,36 +1281,84 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##   short_id()
 ##   tag(repo, tag = NULL)
 ##   tags(reload = TRUE)
-##   untag(repo_tag)</code></pre>
+##   untag(repo_tag)
+</code></pre>
+
 <p>(see below for working with images).</p>
-<p>The status of the container (<code>created</code>, <code>running</code>, <code>exited</code>, <code>paused</code>, etc) can be read with <code>$status()</code></p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb49-1" title="1">x<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;created&quot;</code></pre>
-<p>The container created by by <code>$create</code> is not running - the <code>$start()</code> method will start it:</p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb51-1" title="1">x<span class="op">$</span><span class="kw">start</span>()</a>
-<a class="sourceLine" id="cb51-2" title="2">x<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;running&quot;</code></pre>
-<p>Once the container is running we can query to see what processes are running in it with <code>$top</code> (standing for Table Of Processes)</p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb53-1" title="1">x<span class="op">$</span><span class="kw">top</span>()</a></code></pre></div>
+
+<p>The status of the container (<code>created</code>, <code>running</code>, <code>exited</code>,
+<code>paused</code>, etc) can be read with <code>$status()</code></p>
+
+<pre><code class="r">x$status()
+</code></pre>
+
+<pre><code>## [1] &quot;created&quot;
+</code></pre>
+
+<p>The container created by by <code>$create</code> is not running - the
+<code>$start()</code> method will start it:</p>
+
+<pre><code class="r">x$start()
+x$status()
+</code></pre>
+
+<pre><code>## [1] &quot;running&quot;
+</code></pre>
+
+<p>Once the container is running we can query to see what processes
+are running in it with <code>$top</code> (standing for Table Of Processes)</p>
+
+<pre><code class="r">x$top()
+</code></pre>
+
 <pre><code>##    PID USER TIME                                         COMMAND
-## 1 9076 root 0:00 {iterate} /bin/sh /usr/local/bin/iterate 1000 1
-## 2 9108 root 0:00                                         sleep 1</code></pre>
+## 1 2918 root 0:00 {iterate} /bin/sh /usr/local/bin/iterate 1000 1
+## 2 2953 root 0:00                                         sleep 1
+</code></pre>
+
 <p>We can also get the logs:</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb55-1" title="1">x<span class="op">$</span><span class="kw">logs</span>()</a></code></pre></div>
+
+<pre><code class="r">x$logs()
+</code></pre>
+
 <pre><code>## O&gt; Doing 1000 iterations with interval 1
-## O&gt; Iteration 1...</code></pre>
-<p>This returns a special object type <code>docker_stream</code> which allows control over formatting with <code>format()</code> - the <code>style</code> argument controls how stderr and stdout are printed. There is a <code>stream</code> attribute that can be used to separate out lines too. If a tty was allocated with <code>tty = TRUE</code> the output will be a plain character vector</p>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb57-1" title="1"><span class="kw">format</span>(x<span class="op">$</span><span class="kw">logs</span>(), <span class="dt">style =</span> <span class="st">&quot;plain&quot;</span>)</a></code></pre></div>
+## O&gt; Iteration 1...
+</code></pre>
+
+<p>This returns a special object type <code>docker_stream</code> which allows
+control over formatting with <code>format()</code> - the <code>style</code> argument
+controls how stderr and stdout are printed.  There is a <code>stream</code>
+attribute that can be used to separate out lines too.  If a tty was
+allocated with <code>tty = TRUE</code> the output will be a plain character
+vector</p>
+
+<pre><code class="r">format(x$logs(), style = &quot;plain&quot;)
+</code></pre>
+
 <pre><code>## [1] &quot;Doing 1000 iterations with interval 1\n&quot;
-## [2] &quot;Iteration 1...\n&quot;</code></pre>
+## [2] &quot;Iteration 1...\n&quot;
+</code></pre>
+
 <p>It can generally be treated as a character vector:</p>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb59-1" title="1">x<span class="op">$</span><span class="kw">logs</span>()[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]</a></code></pre></div>
+
+<pre><code class="r">x$logs()[1:2]
+</code></pre>
+
 <pre><code>## [1] &quot;Doing 1000 iterations with interval 1\n&quot;
-## [2] &quot;Iteration 1...\n&quot;</code></pre>
-<p>The <code>$logs()</code> method can be used to do a blocking wait on a container. Pass <code>follow = TRUE</code> to follow the logs. You will want to provide a <code>stream</code> argument too, which is where to stream the log to. This can be <code>stdout()</code> or <code>stderr()</code>, a file or an R connection.</p>
-<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb61-1" title="1">y &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;richfitz/iterate&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;10&quot;</span>, <span class="st">&quot;0.1&quot;</span>))</a>
-<a class="sourceLine" id="cb61-2" title="2">y<span class="op">$</span><span class="kw">start</span>()</a>
-<a class="sourceLine" id="cb61-3" title="3">y<span class="op">$</span><span class="kw">logs</span>(<span class="dt">stream =</span> <span class="kw">stdout</span>(), <span class="dt">follow =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+## [2] &quot;Iteration 1...\n&quot;
+</code></pre>
+
+<p>The <code>$logs()</code> method can be used to do a blocking wait on a
+container.  Pass <code>follow = TRUE</code> to follow the logs.  You will want
+to provide a <code>stream</code> argument too, which is where to stream the
+log to.  This can be <code>stdout()</code> or <code>stderr()</code>, a file or an R
+connection.</p>
+
+<pre><code class="r">y &lt;- docker$container$create(&quot;richfitz/iterate&quot;, c(&quot;10&quot;, &quot;0.1&quot;))
+y$start()
+y$logs(stream = stdout(), follow = TRUE)
+</code></pre>
+
 <pre><code>## O&gt; Doing 10 iterations with interval 0.1
 ## O&gt; Iteration 1...
 ## O&gt; Iteration 2...
@@ -1223,81 +1370,185 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt; Iteration 8...
 ## O&gt; Iteration 9...
 ## O&gt; Iteration 10...
-## O&gt; Done!</code></pre>
-<p>If running this interactively, the logs will print one line at a time - once control returns to R the container has exited. You can escape this streaming using whatever method you use to interrupt an R calculation (depends on which GUI/IDE you are using) but the container will continue regardless - we are just <em>observing</em> a running container.</p>
-<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb63-1" title="1">y<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;exited&quot;</code></pre>
-<p>The other way of blocking until a container has finished is with <code>$wait()</code> which blocks until the container exits, then returns the exit code.</p>
-<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb65-1" title="1">y<span class="op">$</span><span class="kw">start</span>()</a>
-<a class="sourceLine" id="cb65-2" title="2">y<span class="op">$</span><span class="kw">wait</span>()</a></code></pre></div>
+## O&gt; Done!
+</code></pre>
+
+<p>If running this interactively, the logs will print one line at a
+time - once control returns to R the container has exited.  You can
+escape this streaming using whatever method you use to interrupt an
+R calculation (depends on which GUI/IDE you are using) but the
+container will continue regardless - we are just <em>observing</em> a
+running container.</p>
+
+<pre><code class="r">y$status()
+</code></pre>
+
+<pre><code>## [1] &quot;exited&quot;
+</code></pre>
+
+<p>The other way of blocking until a container has finished is with
+<code>$wait()</code> which blocks until the container exits, then returns the
+exit code.</p>
+
+<pre><code class="r">y$start()
+y$wait()
+</code></pre>
+
 <pre><code>## $exit_code
-## [1] 0</code></pre>
-<p>Calling <code>$wait()</code> on an exited container is fine, and will just return immediately:</p>
-<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb67-1" title="1">y<span class="op">$</span><span class="kw">wait</span>()</a></code></pre></div>
+## [1] 0
+</code></pre>
+
+<p>Calling <code>$wait()</code> on an exited container is fine, and will just
+return immediately:</p>
+
+<pre><code class="r">y$wait()
+</code></pre>
+
 <pre><code>## $exit_code
-## [1] 0</code></pre>
+## [1] 0
+</code></pre>
+
 <p>Containers can be paused with <code>$pause()</code></p>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb69-1" title="1">x<span class="op">$</span><span class="kw">pause</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb71-1" title="1">x<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;paused&quot;</code></pre>
+
+<pre><code class="r">x$pause()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<pre><code class="r">x$status()
+</code></pre>
+
+<pre><code>## [1] &quot;paused&quot;
+</code></pre>
+
 <p>Once paused, they can be restarted with <code>$unpause()</code></p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb73-1" title="1">x<span class="op">$</span><span class="kw">unpause</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb75-1" title="1">x<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;running&quot;</code></pre>
+
+<pre><code class="r">x$unpause()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<pre><code class="r">x$status()
+</code></pre>
+
+<pre><code>## [1] &quot;running&quot;
+</code></pre>
+
 <p>Additionally, containers can be <em>restarted</em> with <code>$restart()</code></p>
-<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb77-1" title="1">x<span class="op">$</span><span class="kw">restart</span>(<span class="dt">t =</span> <span class="dv">0</span>)</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb79-1" title="1">x<span class="op">$</span><span class="kw">logs</span>(<span class="dt">tail =</span> <span class="dv">5</span>)</a></code></pre></div>
-<pre><code>## O&gt; Iteration 3...
-## O&gt; Iteration 4...
+
+<pre><code class="r">x$restart(t = 0)
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<pre><code class="r">x$logs(tail = 5)
+</code></pre>
+
+<pre><code>## O&gt; Iteration 4...
 ## O&gt; Iteration 5...
+## O&gt; Iteration 6...
 ## O&gt; Doing 1000 iterations with interval 1
-## O&gt; Iteration 1...</code></pre>
-<p>Containers can be stopped with <code>$stop()</code> and removed with <code>$remove()</code> (calling <code>$remove(force = TRUE)</code> will kill the container before removing.</p>
-<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb81-1" title="1">x<span class="op">$</span><span class="kw">stop</span>(<span class="dt">t =</span> <span class="dv">0</span>)</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb83-1" title="1">x<span class="op">$</span><span class="kw">remove</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
+## O&gt; Iteration 1...
+</code></pre>
+
+<p>Containers can be stopped with <code>$stop()</code> and removed with
+<code>$remove()</code> (calling <code>$remove(force = TRUE)</code> will kill the
+container before removing.</p>
+
+<pre><code class="r">x$stop(t = 0)
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<pre><code class="r">x$remove()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
 <p>Once a container has been removed most methods will not work properly:</p>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb85-1" title="1">x<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## Error: No such container: eff11ac84d9e5645e2d7735f395244ad8eecd836501a8b1b12b8ae181be6ba03</code></pre>
-<p>Information about ports (for containers that expose them) can be retrieved with <code>$ports()</code>. The <code>nginx</code> image creates a web server/proxy that exposes port 80 from the container. We can map that to a random port by asking docker to expose port 80 but not saying what to map it to:</p>
-<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb87-1" title="1">nginx &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;nginx&quot;</span>, <span class="dt">ports =</span> <span class="dv">80</span>,</a>
-<a class="sourceLine" id="cb87-2" title="2">                              <span class="dt">detach =</span> <span class="ot">TRUE</span>, <span class="dt">rm =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb87-3" title="3">                              <span class="dt">name =</span> <span class="st">&quot;stevedore-nginx&quot;</span>)</a>
-<a class="sourceLine" id="cb87-4" title="4">nginx<span class="op">$</span><span class="kw">ports</span>()</a></code></pre></div>
+
+<pre><code class="r">x$status()
+</code></pre>
+
+<pre><code>## Error: No such container: b553018482d2e4119e20c9ccc54fd7a14e6aa7843f630a5266548f31d755211d
+</code></pre>
+
+<p>Information about ports (for containers that expose them) can be
+retrieved with <code>$ports()</code>.  The <code>nginx</code> image creates a web
+server/proxy that exposes port 80 from the container.  We can map
+that to a random port by asking docker to expose port 80 but not
+saying what to map it to:</p>
+
+<pre><code class="r">nginx &lt;- docker$container$run(&quot;nginx&quot;, ports = 80,
+                              detach = TRUE, rm = TRUE,
+                              name = &quot;stevedore-nginx&quot;)
+nginx$ports()
+</code></pre>
+
 <pre><code>##   container_port protocol host_ip host_port
-## 1             80      tcp 0.0.0.0     32772</code></pre>
-<p>(alternatively, use <code>ports = TRUE</code> to act like <code>docker run</code>’s <code>-P</code> and &quot;publish all ports to random ports).</p>
-<p>This shows that the port exposed by the the container (80) is mapped to the port 32772 on the host. We can use this to communicate with the server:</p>
-<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb89-1" title="1">url &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;http://localhost:%s&quot;</span>, nginx<span class="op">$</span><span class="kw">ports</span>()<span class="op">$</span>host_port)</a>
-<a class="sourceLine" id="cb89-2" title="2">curl<span class="op">::</span><span class="kw">parse_headers</span>(curl<span class="op">::</span><span class="kw">curl_fetch_memory</span>(url)<span class="op">$</span>headers)</a></code></pre></div>
+## 1             80      tcp 0.0.0.0     32768
+</code></pre>
+
+<p>(alternatively, use <code>ports = TRUE</code> to act like <code>docker run</code>&#39;s <code>-P</code>
+and &ldquo;publish all ports to random ports).</p>
+
+<p>This shows that the port exposed by the the container (80) is
+mapped to the port 32768 on the
+host.  We can use this to communicate with the server:</p>
+
+<pre><code class="r">url &lt;- sprintf(&quot;http://localhost:%s&quot;, nginx$ports()$host_port)
+curl::parse_headers(curl::curl_fetch_memory(url)$headers)
+</code></pre>
+
 <pre><code>## [1] &quot;HTTP/1.1 200 OK&quot;
-## [2] &quot;Server: nginx/1.15.6&quot;
-## [3] &quot;Date: Thu, 08 Nov 2018 09:58:13 GMT&quot;
+## [2] &quot;Server: nginx/1.17.7&quot;
+## [3] &quot;Date: Sun, 12 Jan 2020 10:05:34 GMT&quot;
 ## [4] &quot;Content-Type: text/html&quot;
 ## [5] &quot;Content-Length: 612&quot;
-## [6] &quot;Last-Modified: Tue, 06 Nov 2018 13:32:09 GMT&quot;
+## [6] &quot;Last-Modified: Tue, 24 Dec 2019 13:07:53 GMT&quot;
 ## [7] &quot;Connection: keep-alive&quot;
-## [8] &quot;ETag: \&quot;5be197d9-264\&quot;&quot;
-## [9] &quot;Accept-Ranges: bytes&quot;</code></pre>
-<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb91-1" title="1">nginx<span class="op">$</span><span class="kw">stop</span>(<span class="dt">t =</span> <span class="dv">0</span>)</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-</div>
-</div>
-<div id="run-commands-in-running-containers-with-exec" class="section level2">
+## [8] &quot;ETag: \&quot;5e020da9-264\&quot;&quot;
+## [9] &quot;Accept-Ranges: bytes&quot;
+</code></pre>
+
+<pre><code class="r">nginx$stop(t = 0)
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
 <h2>Run commands in running containers with <code>exec</code></h2>
-<p>With the command-line tool, <code>docker exec &lt;container name&gt; &lt;command&gt;</code> lets you run an arbitrary command within a running container. <code>stevedore</code> does this with the <code>exec</code> method of a container object.</p>
-<p>Reasons for doing this include debugging (using arbitrary commands to inspect/interact with a container while it does its primary task) but it can also be used in deployment (e.g., sending a “go” signal after copying files into the container).</p>
+
+<p>With the command-line tool, <code>docker exec &lt;container name&gt;
+&lt;command&gt;</code> lets you run an arbitrary command within a running
+container.  <code>stevedore</code> does this with the <code>exec</code> method of a
+container object.</p>
+
+<p>Reasons for doing this include debugging (using arbitrary commands
+to inspect/interact with a container while it does its primary
+task) but it can also be used in deployment (e.g., sending a &quot;go&rdquo;
+signal after copying files into the container).</p>
+
 <p>To demonstrate, we need a long running container:</p>
-<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb93-1" title="1">x &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;richfitz/iterate&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;1000&quot;</span>, <span class="st">&quot;10&quot;</span>),</a>
-<a class="sourceLine" id="cb93-2" title="2">                          <span class="dt">detach =</span> <span class="ot">TRUE</span>, <span class="dt">rm =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb93-3" title="3">x<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;running&quot;</code></pre>
+
+<pre><code class="r">x &lt;- docker$container$run(&quot;richfitz/iterate&quot;, c(&quot;1000&quot;, &quot;10&quot;),
+                          detach = TRUE, rm = TRUE)
+x$status()
+</code></pre>
+
+<pre><code>## [1] &quot;running&quot;
+</code></pre>
+
 <p>With the container running we can run additional commands:</p>
-<div class="sourceCode" id="cb95"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb95-1" title="1">res &lt;-<span class="st"> </span>x<span class="op">$</span><span class="kw">exec</span>(<span class="st">&quot;ls&quot;</span>)</a></code></pre></div>
+
+<pre><code class="r">res &lt;- x$exec(&quot;ls&quot;)
+</code></pre>
+
 <pre><code>## O&gt; bin
 ## O&gt; dev
 ## O&gt; etc
@@ -1305,6 +1556,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt; lib
 ## O&gt; media
 ## O&gt; mnt
+## O&gt; opt
 ## O&gt; proc
 ## O&gt; root
 ## O&gt; run
@@ -1313,11 +1565,18 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt; sys
 ## O&gt; tmp
 ## O&gt; usr
-## O&gt; var</code></pre>
-<p>This streams the output of the command by default (to the connection indicated by the <code>stream</code>) argument. Output is also returned as part of the object:</p>
-<div class="sourceCode" id="cb97"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb97-1" title="1">res</a></code></pre></div>
+## O&gt; var
+</code></pre>
+
+<p>This streams the output of the command by default (to the
+connection indicated by the <code>stream</code>) argument.  Output is also
+returned as part of the object:</p>
+
+<pre><code class="r">res
+</code></pre>
+
 <pre><code>## $id
-## [1] &quot;07686a2672491e49840bbba814f062257a6b20d626740db842f414821a5e5049&quot;
+## [1] &quot;62e5e653b88bda606b07b286bd27ca8d0b653e3000e76004463b609974722d0e&quot;
 ##
 ## $exit_code
 ## [1] 0
@@ -1330,7 +1589,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] &quot;&quot;
 ##
 ## $details$id
-## [1] &quot;07686a2672491e49840bbba814f062257a6b20d626740db842f414821a5e5049&quot;
+## [1] &quot;62e5e653b88bda606b07b286bd27ca8d0b653e3000e76004463b609974722d0e&quot;
 ##
 ## $details$running
 ## [1] FALSE
@@ -1365,10 +1624,10 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## [1] TRUE
 ##
 ## $details$container_id
-## [1] &quot;f8d32b27f8aa60fd0f3ee069847db2e1eb77f91ed7535b5a5ff6e04d1c7b0a4e&quot;
+## [1] &quot;9317cd764a3c2648de3d284ea084466afc1512fba48625233498ee1dc9754da2&quot;
 ##
 ## $details$pid
-## [1] 9827
+## [1] 3673
 ##
 ##
 ## $output
@@ -1379,6 +1638,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt; lib
 ## O&gt; media
 ## O&gt; mnt
+## O&gt; opt
 ## O&gt; proc
 ## O&gt; root
 ## O&gt; run
@@ -1387,24 +1647,43 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ## O&gt; sys
 ## O&gt; tmp
 ## O&gt; usr
-## O&gt; var</code></pre>
-</div>
-<div id="copy-files-into-and-out-of-containers" class="section level2">
+## O&gt; var
+</code></pre>
+
 <h2>Copy files into and out of containers</h2>
-<p>Just like <code>docker cp</code>, <code>stevedore</code> lets you copy files into and out of containers. The logic mimics the logic in the docker command line client as closely as possible.</p>
+
+<p>Just like <code>docker cp</code>, <code>stevedore</code> lets you copy files into and out
+of containers.  The logic mimics the logic in the docker command
+line client as closely as possible.</p>
+
 <p>To copy a file into our container <code>x</code>, use <code>$cp_in</code></p>
-<div class="sourceCode" id="cb99"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb99-1" title="1">path &lt;-<span class="st"> </span><span class="kw">tempfile</span>()</a>
-<a class="sourceLine" id="cb99-2" title="2"><span class="kw">writeLines</span>(<span class="st">&quot;hello&quot;</span>, path)</a>
-<a class="sourceLine" id="cb99-3" title="3">x<span class="op">$</span><span class="kw">cp_in</span>(path, <span class="st">&quot;/hello&quot;</span>)</a></code></pre></div>
+
+<pre><code class="r">path &lt;- tempfile()
+writeLines(&quot;hello&quot;, path)
+x$cp_in(path, &quot;/hello&quot;)
+</code></pre>
+
 <p>And the new file is on the container</p>
-<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb100-1" title="1">x<span class="op">$</span><span class="kw">exec</span>(<span class="kw">c</span>(<span class="st">&quot;cat&quot;</span>, <span class="st">&quot;/hello&quot;</span>), <span class="dt">stream =</span> <span class="ot">FALSE</span>)<span class="op">$</span>output</a></code></pre></div>
-<pre><code>## O&gt; hello</code></pre>
+
+<pre><code class="r">x$exec(c(&quot;cat&quot;, &quot;/hello&quot;), stream = FALSE)$output
+</code></pre>
+
+<pre><code>## O&gt; hello
+</code></pre>
+
 <p>The input can be a single file or a single directory.</p>
+
 <p>To copy out, use <code>$cp_out</code></p>
-<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb102-1" title="1">dest &lt;-<span class="st"> </span><span class="kw">tempfile</span>()</a>
-<a class="sourceLine" id="cb102-2" title="2">x<span class="op">$</span><span class="kw">cp_out</span>(<span class="st">&quot;/usr/local/bin/iterate&quot;</span>, dest)</a></code></pre></div>
+
+<pre><code class="r">dest &lt;- tempfile()
+x$cp_out(&quot;/usr/local/bin/iterate&quot;, dest)
+</code></pre>
+
 <p>Here is the iterate script, from the container:</p>
-<div class="sourceCode" id="cb103"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb103-1" title="1"><span class="kw">writeLines</span>(<span class="kw">readLines</span>(dest, <span class="dt">n =</span> <span class="dv">10</span>))</a></code></pre></div>
+
+<pre><code class="r">writeLines(readLines(dest, n = 10))
+</code></pre>
+
 <pre><code>## #!/bin/sh
 ## set -e
 ##
@@ -1414,49 +1693,87 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##     TIMES=10
 ## fi
 ##
-## if [ &quot;$#&quot; -ge 2 ]; then</code></pre>
-<p>There is also a convenience method at the root of the docker object that behaves more like <code>docker cp</code> and requires that one of the source or destination arguments is given in <code>&lt;container&gt;:&lt;path&gt;</code> format:</p>
-<div class="sourceCode" id="cb105"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb105-1" title="1">src &lt;-<span class="st"> </span><span class="kw">paste0</span>(x<span class="op">$</span><span class="kw">name</span>(), <span class="st">&quot;:/usr/local/bin/iterate&quot;</span>)</a>
-<a class="sourceLine" id="cb105-2" title="2">src</a></code></pre></div>
-<pre><code>## [1] &quot;happy_kilby:/usr/local/bin/iterate&quot;</code></pre>
+## if [ &quot;$#&quot; -ge 2 ]; then
+</code></pre>
+
+<p>There is also a convenience method at the root of the docker object
+that behaves more like <code>docker cp</code> and requires that one of the source or destination arguments is given in <code>&lt;container&gt;:&lt;path&gt;</code> format:</p>
+
+<pre><code class="r">src &lt;- paste0(x$name(), &quot;:/usr/local/bin/iterate&quot;)
+src
+</code></pre>
+
+<pre><code>## [1] &quot;sad_ptolemy:/usr/local/bin/iterate&quot;
+</code></pre>
+
 <p>as</p>
-<div class="sourceCode" id="cb107"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb107-1" title="1">dest2 &lt;-<span class="st"> </span><span class="kw">tempfile</span>()</a>
-<a class="sourceLine" id="cb107-2" title="2">docker<span class="op">$</span><span class="kw">cp</span>(src, dest2)</a></code></pre></div>
+
+<pre><code class="r">dest2 &lt;- tempfile()
+docker$cp(src, dest2)
+</code></pre>
+
 <p>which achieves the same thing as the <code>$cp_out</code> command above.</p>
-<div class="sourceCode" id="cb108"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb108-1" title="1"><span class="kw">unname</span>(tools<span class="op">::</span><span class="kw">md5sum</span>(<span class="kw">c</span>(dest, dest2)))</a></code></pre></div>
-<pre><code>## [1] &quot;87bea4544cfd716dbab5030deb873b62&quot; &quot;87bea4544cfd716dbab5030deb873b62&quot;</code></pre>
-<p>(don’t forget to remove your detached containers later!)</p>
-<div class="sourceCode" id="cb110"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb110-1" title="1">x<span class="op">$</span><span class="kw">kill</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-</div>
-<div id="images" class="section level2">
+
+<pre><code class="r">unname(tools::md5sum(c(dest, dest2)))
+</code></pre>
+
+<pre><code>## [1] &quot;87bea4544cfd716dbab5030deb873b62&quot; &quot;87bea4544cfd716dbab5030deb873b62&quot;
+</code></pre>
+
+<p>(don&#39;t forget to remove your detached containers later!)</p>
+
+<pre><code class="r">x$kill()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
 <h2>Images</h2>
-<div id="pulling" class="section level3">
+
 <h3>Pulling</h3>
-<p>Images can be directly pulled with <code>docker$image$pull</code> providing an image name (as either <code>&lt;repo&gt;</code> or <code>&lt;repo&gt;:&lt;tag&gt;</code>. If the image exists already this will be quick, and if the network connection is down then this will fail.</p>
-<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb112-1" title="1">docker<span class="op">$</span>image<span class="op">$</span><span class="kw">pull</span>(<span class="st">&quot;bash:latest&quot;</span>)</a></code></pre></div>
+
+<p>Images can be directly pulled with <code>docker$image$pull</code> providing
+an image name (as either <code>&lt;repo&gt;</code> or <code>&lt;repo&gt;:&lt;tag&gt;</code>.  If the image
+exists already this will be quick, and if the network connection is
+down then this will fail.</p>
+
+<pre><code class="r">docker$image$pull(&quot;bash:latest&quot;)
+</code></pre>
+
 <pre><code>## Pulling from library/bash latest
-## Already exists 4fe2ade4980c
-## Pulling fs layer ec6d9ca5c66a
-## Pulling fs layer d8685fbd86ca
-## d8685fbd86ca: Downloading 341 B/341 B 100%
-## Verifying Checksum d8685fbd86ca
-## Download complete d8685fbd86ca
-## ec6d9ca5c66a: Downloading 27.88 kB/2.73 MB 1%
-## ec6d9ca5c66a: Downloading 2.23 MB/2.73 MB 82%
-## Verifying Checksum ec6d9ca5c66a
-## Download complete ec6d9ca5c66a
-## ec6d9ca5c66a: Extracting 32.77 kB/2.73 MB 1%
-## ec6d9ca5c66a: Extracting 1.34 MB/2.73 MB 49%
-## ec6d9ca5c66a: Extracting 2.56 MB/2.73 MB 94%
-## ec6d9ca5c66a: Extracting 2.72 MB/2.73 MB 100%
-## ec6d9ca5c66a: Extracting 2.73 MB/2.73 MB 100%
-## Pull complete ec6d9ca5c66a
-## d8685fbd86ca: Extracting 341 B/341 B 100%
-## d8685fbd86ca: Extracting 341 B/341 B 100%
-## Pull complete d8685fbd86ca
-## Digest: sha256:8634afcddefc8a10565b22d685df782058b096712a91bf45d75633f368dda729
-## Status: Downloaded newer image for bash:latest</code></pre>
+## Already exists 89d9c30c1d48
+## Pulling fs layer 1cd014c0f09d
+## Pulling fs layer fed606654955
+## 1cd014c0f09d: Downloading 31.87 kB/3.17 MB 1%
+## fed606654955: Downloading 340 B/340 B 100%
+## Verifying Checksum fed606654955
+## Download complete fed606654955
+## 1cd014c0f09d: Downloading 228.48 kB/3.17 MB 7%
+## 1cd014c0f09d: Downloading 588.92 kB/3.17 MB 19%
+## 1cd014c0f09d: Downloading 1.08 MB/3.17 MB 34%
+## 1cd014c0f09d: Downloading 1.41 MB/3.17 MB 44%
+## 1cd014c0f09d: Downloading 1.75 MB/3.17 MB 55%
+## 1cd014c0f09d: Downloading 2.08 MB/3.17 MB 65%
+## 1cd014c0f09d: Downloading 2.42 MB/3.17 MB 76%
+## 1cd014c0f09d: Downloading 2.75 MB/3.17 MB 87%
+## 1cd014c0f09d: Downloading 3.07 MB/3.17 MB 97%
+## Verifying Checksum 1cd014c0f09d
+## Download complete 1cd014c0f09d
+## 1cd014c0f09d: Extracting 32.77 kB/3.17 MB 1%
+## 1cd014c0f09d: Extracting 262.14 kB/3.17 MB 8%
+## 1cd014c0f09d: Extracting 2.16 MB/3.17 MB 68%
+## 1cd014c0f09d: Extracting 2.98 MB/3.17 MB 94%
+## 1cd014c0f09d: Extracting 3.05 MB/3.17 MB 96%
+## 1cd014c0f09d: Extracting 3.15 MB/3.17 MB 99%
+## 1cd014c0f09d: Extracting 3.17 MB/3.17 MB 100%
+## Pull complete 1cd014c0f09d
+## fed606654955: Extracting 340 B/340 B 100%
+## fed606654955: Extracting 340 B/340 B 100%
+## Pull complete fed606654955
+## Digest: sha256:293ac2e5c5be7722d6f4aa620c6451aea359eec1f2f6d5c0faef948b86e449cd
+## Status: Downloaded newer image for bash:latest
+</code></pre>
+
 <pre><code>## &lt;docker_image&gt;
 ##   export()
 ##   help(help_type = getOption(&quot;help_type&quot;))
@@ -1470,28 +1787,40 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 ##   short_id()
 ##   tag(repo, tag = NULL)
 ##   tags(reload = TRUE)
-##   untag(repo_tag)</code></pre>
-</div>
-<div id="the-object-returned-by-pull-is-an-image-object---that-can-be" class="section level3">
+##   untag(repo_tag)
+</code></pre>
+
 <h3>The object returned by pull is an image object - that can be</h3>
-</div>
-<div id="created-by-using-get" class="section level3">
+
 <h3>created by using <code>$get</code></h3>
-<div class="sourceCode" id="cb115"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb115-1" title="1">img &lt;-<span class="st"> </span>docker<span class="op">$</span>image<span class="op">$</span><span class="kw">get</span>(<span class="st">&quot;bash:latest&quot;</span>)</a></code></pre></div>
-</div>
-<div id="building" class="section level3">
+
+<pre><code class="r">img &lt;- docker$image$get(&quot;bash:latest&quot;)
+</code></pre>
+
 <h3>Building</h3>
-<p>The other common way of getting images is to build them (the equivalent of <code>docker build</code>). So if we have a path (here, <code>iterate</code>) containing a Dockerfile:</p>
-<div class="sourceCode" id="cb116"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb116-1" title="1"><span class="kw">dir</span>(<span class="st">&quot;iterate&quot;</span>)</a></code></pre></div>
-<pre><code>## [1] &quot;Dockerfile&quot; &quot;iterate&quot;</code></pre>
+
+<p>The other common way of getting images is to build them (the
+equivalent of <code>docker build</code>).  So if we have a path (here,
+<code>iterate</code>) containing a Dockerfile:</p>
+
+<pre><code class="r">dir(&quot;iterate&quot;)
+</code></pre>
+
+<pre><code>## [1] &quot;Dockerfile&quot; &quot;iterate&quot;
+</code></pre>
+
 <p>The Dockerfile itself contains:</p>
-<pre class="plain"><code>FROM alpine:latest
+
+<pre><code class="plain">FROM alpine:latest
 COPY iterate /usr/local/bin/iterate
 CMD chmod +x /usr/local/bin/iterate
 LABEL stevedore_version 0.0.1
-ENTRYPOINT [&quot;/usr/local/bin/iterate&quot;]</code></pre>
+ENTRYPOINT [&quot;/usr/local/bin/iterate&quot;]
+</code></pre>
+
 <p>and the <code>iterate</code> file is an executable shell script containing:</p>
-<pre class="shell"><code>#!/bin/sh
+
+<pre><code class="shell">#!/bin/sh
 set -e
 
 if [ &quot;$#&quot; -ge 1 ]; then
@@ -1513,28 +1842,37 @@ while [ $i -lt $TIMES ]; do
     echo &quot;Iteration $i...&quot;
     sleep $INTERVAL
 done
-echo &quot;Done!&quot;</code></pre>
+echo &quot;Done!&quot;
+</code></pre>
+
 <p>We can build this image using:</p>
-<div class="sourceCode" id="cb120"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb120-1" title="1">img &lt;-<span class="st"> </span>docker<span class="op">$</span>image<span class="op">$</span><span class="kw">build</span>(<span class="st">&quot;iterate&quot;</span>, <span class="dt">tag =</span> <span class="st">&quot;richfitz/iterate&quot;</span>, <span class="dt">nocache =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+
+<pre><code class="r">img &lt;- docker$image$build(&quot;iterate&quot;, tag = &quot;richfitz/iterate&quot;, nocache = TRUE)
+</code></pre>
+
 <pre><code>## Step 1/5 : FROM alpine:latest
-##  ---&gt; 196d12cf6ab1
+##  ---&gt; cc0abc535e36
 ## Step 2/5 : COPY iterate /usr/local/bin/iterate
-##  ---&gt; edd3344b049f
+##  ---&gt; bfead14674a0
 ## Step 3/5 : CMD chmod +x /usr/local/bin/iterate
-##  ---&gt; Running in a7e17d0d5435
-## Removing intermediate container a7e17d0d5435
-##  ---&gt; a439e13dd870
+##  ---&gt; Running in 3ffd8d1225b8
+## Removing intermediate container 3ffd8d1225b8
+##  ---&gt; d5b6a0eaa685
 ## Step 4/5 : LABEL stevedore_version 0.0.1
-##  ---&gt; Running in 72a70d3eda62
-## Removing intermediate container 72a70d3eda62
-##  ---&gt; e57263fa5be8
+##  ---&gt; Running in c150ea2a1f95
+## Removing intermediate container c150ea2a1f95
+##  ---&gt; 346745e9ebc8
 ## Step 5/5 : ENTRYPOINT [&quot;/usr/local/bin/iterate&quot;]
-##  ---&gt; Running in 427227e0d07f
-## Removing intermediate container 427227e0d07f
-##  ---&gt; c8b1e1f480aa
-## Successfully built c8b1e1f480aa
-## Successfully tagged richfitz/iterate:latest</code></pre>
-<div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb122-1" title="1">img</a></code></pre></div>
+##  ---&gt; Running in a17b554ff885
+## Removing intermediate container a17b554ff885
+##  ---&gt; 244154bfbb99
+## Successfully built 244154bfbb99
+## Successfully tagged richfitz/iterate:latest
+</code></pre>
+
+<pre><code class="r">img
+</code></pre>
+
 <pre><code>## &lt;docker_image&gt;
 ##   export()
 ##   help(help_type = getOption(&quot;help_type&quot;))
@@ -1548,10 +1886,16 @@ echo &quot;Done!&quot;</code></pre>
 ##   short_id()
 ##   tag(repo, tag = NULL)
 ##   tags(reload = TRUE)
-##   untag(repo_tag)</code></pre>
-<p>The newly created image is returned as an image object and can be used via <code>$container$run()</code></p>
-<div class="sourceCode" id="cb124"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb124-1" title="1"><span class="kw">invisible</span>(</a>
-<a class="sourceLine" id="cb124-2" title="2">  docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(img, <span class="kw">c</span>(<span class="st">&quot;10&quot;</span>, <span class="st">&quot;0.1&quot;</span>), <span class="dt">rm =</span> <span class="ot">TRUE</span>, <span class="dt">stream =</span> <span class="kw">stdout</span>()))</a></code></pre></div>
+##   untag(repo_tag)
+</code></pre>
+
+<p>The newly created image is returned as an image object and can be
+used via <code>$container$run()</code></p>
+
+<pre><code class="r">invisible(
+  docker$container$run(img, c(&quot;10&quot;, &quot;0.1&quot;), rm = TRUE, stream = stdout()))
+</code></pre>
+
 <pre><code>## O&gt; Doing 10 iterations with interval 0.1
 ## O&gt; Iteration 1...
 ## O&gt; Iteration 2...
@@ -1563,17 +1907,23 @@ echo &quot;Done!&quot;</code></pre>
 ## O&gt; Iteration 8...
 ## O&gt; Iteration 9...
 ## O&gt; Iteration 10...
-## O&gt; Done!</code></pre>
-</div>
-<div id="importing" class="section level3">
+## O&gt; Done!
+</code></pre>
+
 <h3>Importing</h3>
-<p>There is a third way of creating an image, which is to import it from a tar archive. This is not yet documented (<strong>TODO</strong>) but can be done via <code>$image$import()</code></p>
-</div>
-<div id="working-with-image-objects" class="section level3">
+
+<p>There is a third way of creating an image, which is to import it
+from a tar archive.  This is not yet documented (<strong>TODO</strong>) but can
+be done via <code>$image$import()</code></p>
+
 <h3>Working with image objects</h3>
+
 <p>Each image object has a number of methods.</p>
-<div class="sourceCode" id="cb126"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb126-1" title="1">img &lt;-<span class="st"> </span>docker<span class="op">$</span>image<span class="op">$</span><span class="kw">get</span>(<span class="st">&quot;richfitz/iterate&quot;</span>)</a>
-<a class="sourceLine" id="cb126-2" title="2">img</a></code></pre></div>
+
+<pre><code class="r">img &lt;- docker$image$get(&quot;richfitz/iterate&quot;)
+img
+</code></pre>
+
 <pre><code>## &lt;docker_image&gt;
 ##   export()
 ##   help(help_type = getOption(&quot;help_type&quot;))
@@ -1587,24 +1937,53 @@ echo &quot;Done!&quot;</code></pre>
 ##   short_id()
 ##   tag(repo, tag = NULL)
 ##   tags(reload = TRUE)
-##   untag(repo_tag)</code></pre>
-<p>The <code>$id()</code>, <code>$short_id()</code>, <code>$labels()</code>, <code>$name()</code> and <code>$tags()</code> query basic information about an image</p>
-<div class="sourceCode" id="cb128"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb128-1" title="1">img<span class="op">$</span><span class="kw">id</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c&quot;</code></pre>
-<div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb130-1" title="1">img<span class="op">$</span><span class="kw">short_id</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;sha256:c8b1e1f480&quot;</code></pre>
-<div class="sourceCode" id="cb132"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb132-1" title="1">img<span class="op">$</span><span class="kw">labels</span>()</a></code></pre></div>
+##   untag(repo_tag)
+</code></pre>
+
+<p>The <code>$id()</code>, <code>$short_id()</code>, <code>$labels()</code>, <code>$name()</code> and <code>$tags()</code>
+query basic information about an image</p>
+
+<pre><code class="r">img$id()
+</code></pre>
+
+<pre><code>## [1] &quot;sha256:244154bfbb9995fc3c5fede726ec4c2679ba393375f2a8130ffd8537dcce3285&quot;
+</code></pre>
+
+<pre><code class="r">img$short_id()
+</code></pre>
+
+<pre><code>## [1] &quot;sha256:244154bfbb&quot;
+</code></pre>
+
+<pre><code class="r">img$labels()
+</code></pre>
+
 <pre><code>## stevedore_version
-##           &quot;0.0.1&quot;</code></pre>
-<div class="sourceCode" id="cb134"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb134-1" title="1">img<span class="op">$</span><span class="kw">name</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;richfitz/iterate&quot;</code></pre>
-<div class="sourceCode" id="cb136"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb136-1" title="1">img<span class="op">$</span><span class="kw">tags</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;richfitz/iterate:latest&quot;</code></pre>
-<p>(short_id<code>is always 10 characters long and does not include a leading</code>sha256:`).</p>
+##           &quot;0.0.1&quot;
+</code></pre>
+
+<pre><code class="r">img$name()
+</code></pre>
+
+<pre><code>## [1] &quot;richfitz/iterate&quot;
+</code></pre>
+
+<pre><code class="r">img$tags()
+</code></pre>
+
+<pre><code>## [1] &quot;richfitz/iterate:latest&quot;
+</code></pre>
+
+<p>(short_id<code>is always 10 characters long and does not include a
+leading</code>sha256:).</p>
+
 <p>The <code>inspect()</code> method returns detailed information about the image</p>
-<div class="sourceCode" id="cb138"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb138-1" title="1">img<span class="op">$</span><span class="kw">inspect</span>()</a></code></pre></div>
+
+<pre><code class="r">img$inspect()
+</code></pre>
+
 <pre><code>## $id
-## [1] &quot;sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c&quot;
+## [1] &quot;sha256:244154bfbb9995fc3c5fede726ec4c2679ba393375f2a8130ffd8537dcce3285&quot;
 ##
 ## $repo_tags
 ## [1] &quot;richfitz/iterate:latest&quot;
@@ -1613,20 +1992,20 @@ echo &quot;Done!&quot;</code></pre>
 ## character(0)
 ##
 ## $parent
-## [1] &quot;sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62&quot;
+## [1] &quot;sha256:346745e9ebc8af6b623cdf5729ceddfd215e33d7886a7e72e71beba46d9bceca&quot;
 ##
 ## $comment
 ## [1] &quot;&quot;
 ##
 ## $created
-## [1] &quot;2018-11-08T09:58:20.5589147Z&quot;
+## [1] &quot;2020-01-12T10:05:44.4499183Z&quot;
 ##
 ## $container
-## [1] &quot;427227e0d07f7831f280381814b30daba4b6e75e057d7e21dfb972bf1bd7a677&quot;
+## [1] &quot;a17b554ff885999f2bd26d6716e358fea4d3e01194986dca3c0e6c4b57c095db&quot;
 ##
 ## $container_config
 ## $container_config$hostname
-## [1] &quot;427227e0d07f&quot;
+## [1] &quot;a17b554ff885&quot;
 ##
 ## $container_config$domainname
 ## [1] &quot;&quot;
@@ -1671,7 +2050,7 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] TRUE
 ##
 ## $container_config$image
-## [1] &quot;sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62&quot;
+## [1] &quot;sha256:346745e9ebc8af6b623cdf5729ceddfd215e33d7886a7e72e71beba46d9bceca&quot;
 ##
 ## $container_config$volumes
 ## NULL
@@ -1706,7 +2085,7 @@ echo &quot;Done!&quot;</code></pre>
 ##
 ##
 ## $docker_version
-## [1] &quot;18.05.0-ce&quot;
+## [1] &quot;18.09.2&quot;
 ##
 ## $author
 ## [1] &quot;&quot;
@@ -1756,7 +2135,7 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] TRUE
 ##
 ## $config$image
-## [1] &quot;sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62&quot;
+## [1] &quot;sha256:346745e9ebc8af6b623cdf5729ceddfd215e33d7886a7e72e71beba46d9bceca&quot;
 ##
 ## $config$volumes
 ## NULL
@@ -1800,10 +2179,10 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] NA
 ##
 ## $size
-## [1] 4413676
+## [1] 5591606
 ##
 ## $virtual_size
-## [1] 4413676
+## [1] 5591606
 ##
 ## $graph_driver
 ## $graph_driver$name
@@ -1811,13 +2190,13 @@ echo &quot;Done!&quot;</code></pre>
 ##
 ## $graph_driver$data
 ##                                                                                          lower_dir
-##   &quot;/var/lib/docker/overlay2/552f07f3a7c097bea8e9f21926b47499928906f70793411a3b0932104ef0e4a7/diff&quot;
+##   &quot;/var/lib/docker/overlay2/e1a21604d525ede2c5e9e6d59ac7dceb33bc7469ad98cc9997477a38c310305c/diff&quot;
 ##                                                                                         merged_dir
-## &quot;/var/lib/docker/overlay2/1a91d52cb709a1ffbe340f8e333c6eb55387d3005f73fd009d6d86cd930e4989/merged&quot;
+## &quot;/var/lib/docker/overlay2/934d66f90f6c661634b1618ea61d7f0b87149631cb4715059b862e18c27eac1f/merged&quot;
 ##                                                                                          upper_dir
-##   &quot;/var/lib/docker/overlay2/1a91d52cb709a1ffbe340f8e333c6eb55387d3005f73fd009d6d86cd930e4989/diff&quot;
+##   &quot;/var/lib/docker/overlay2/934d66f90f6c661634b1618ea61d7f0b87149631cb4715059b862e18c27eac1f/diff&quot;
 ##                                                                                           work_dir
-##   &quot;/var/lib/docker/overlay2/1a91d52cb709a1ffbe340f8e333c6eb55387d3005f73fd009d6d86cd930e4989/work&quot;
+##   &quot;/var/lib/docker/overlay2/934d66f90f6c661634b1618ea61d7f0b87149631cb4715059b862e18c27eac1f/work&quot;
 ##
 ##
 ## $root_fs
@@ -1825,8 +2204,8 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] &quot;layers&quot;
 ##
 ## $root_fs$layers
-## [1] &quot;sha256:df64d3292fd6194b7865d7326af5255db6d81e9df29f48adde61a918fbd8c332&quot;
-## [2] &quot;sha256:051f311b03fd72d33f49b92474d49af829dd12783acab6bd25f8ca12fad903f1&quot;
+## [1] &quot;sha256:6b27de954cca6332272e7709b7d8ceccee1489d9452af73391df360a26123580&quot;
+## [2] &quot;sha256:14794d0f3100e41f9a96e1d181db26e010ae56489b484f0abcc782dcfc438de5&quot;
 ##
 ## $root_fs$base_layer
 ## [1] NA
@@ -1834,50 +2213,80 @@ echo &quot;Done!&quot;</code></pre>
 ##
 ## $metadata
 ## $metadata$last_tag_time
-## [1] &quot;2018-11-08T09:58:20.628139Z&quot;</code></pre>
-<p>the exact format varies between docker API versions but should be the same for all images within an API version.</p>
-<p>The <code>history()</code> method returns a data.frame of information about the history of an image (i.e., the layers that it is constructed from)</p>
-<div class="sourceCode" id="cb140"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb140-1" title="1">img<span class="op">$</span><span class="kw">history</span>()</a></code></pre></div>
+## [1] &quot;2020-01-12T10:05:44.5147212Z&quot;
+</code></pre>
+
+<p>the exact format varies between docker API versions but should be
+the same for all images within an API version.</p>
+
+<p>The <code>history()</code> method returns a data.frame of information about
+the history of an image (i.e., the layers that it is constructed
+from)</p>
+
+<pre><code class="r">img$history()
+</code></pre>
+
 <pre><code>##                                                                        id
-## 1 sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c
-## 2 sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62
-## 3 sha256:a439e13dd8709134a2db6a76c441f2fa9055565a2fc4165d7989cc17a1a2b9db
-## 4 sha256:edd3344b049f978c480142e7d2fcbcc4160d221b1464ac5ea911ed4a22ccb01b
-## 5 sha256:196d12cf6ab19273823e700516e98eb1910b03b17840f9d5509f03858484d321
+## 1 sha256:244154bfbb9995fc3c5fede726ec4c2679ba393375f2a8130ffd8537dcce3285
+## 2 sha256:346745e9ebc8af6b623cdf5729ceddfd215e33d7886a7e72e71beba46d9bceca
+## 3 sha256:d5b6a0eaa685450861afb86bc00f05762bba84284ad2b36b252893f4c0972bb4
+## 4 sha256:bfead14674a0cf29a4cb48ee5b11d006b7451ddd098086bc3866ded70821cd8d
+## 5 sha256:cc0abc535e36a7ede71978ba2bbd8159b8a5420b91f2fbc520cdf5f673640a34
 ## 6                                                               &lt;missing&gt;
 ##      created
-## 1 1541671100
-## 2 1541671100
-## 3 1541671100
-## 4 1541671099
-## 5 1536704390
-## 6 1536704390
+## 1 1578823544
+## 2 1578823544
+## 3 1578823543
+## 4 1578823543
+## 5 1577215212
+## 6 1577215212
 ##                                                                                                                created_by
 ## 1                                                                /bin/sh -c #(nop)  ENTRYPOINT [&quot;/usr/local/bin/iterate&quot;]
 ## 2                                                                        /bin/sh -c #(nop)  LABEL stevedore_version=0.0.1
 ## 3                                               /bin/sh -c #(nop)  CMD [&quot;/bin/sh&quot; &quot;-c&quot; &quot;chmod +x /usr/local/bin/iterate&quot;]
-## 4 /bin/sh -c #(nop) COPY file:efe53a0b7763b2563b430ec205d0afcf139aef00ec6e086e03b446645968dd8d in /usr/local/bin/iterate
+## 4 /bin/sh -c #(nop) COPY file:8b8ba7864a94787016cc3c519efd97a1c7dde8a1b64fec3d078096872b2ece4c in /usr/local/bin/iterate
 ## 5                                                                                      /bin/sh -c #(nop)  CMD [&quot;/bin/sh&quot;]
-## 6                       /bin/sh -c #(nop) ADD file:25c10b1d1b41d46a1827ad0b0d2389c24df6d31430005ff4e9a2d84ea23ebd42 in /
+## 6                       /bin/sh -c #(nop) ADD file:36fdc8cb08228a87093fb227736f4ce1d4d6c15366326dea541fbbd863976ee5 in /
 ##           tags    size comment
 ## 1 richfitz....       0
 ## 2                    0
 ## 3                    0
 ## 4                  306
 ## 5 alpine:l....       0
-## 6              4413370</code></pre>
+## 6              5591300
+</code></pre>
+
 <p>(printing these objects is a real challenge!).</p>
-<p>The <code>export()</code> method exports an image as a tar object. There is some work still required to make this work nicely (currently it returns a [potentially long] raw vector).</p>
+
+<p>The <code>export()</code> method exports an image as a tar object.  There is
+some work still required to make this work nicely (currently it
+returns a [potentially long] raw vector).</p>
+
 <p>There are several methods that operate to modify or destroy the image:</p>
+
 <p>The <code>$tag()</code> method will tag an image, for example</p>
-<div class="sourceCode" id="cb142"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb142-1" title="1">img<span class="op">$</span><span class="kw">tag</span>(<span class="st">&quot;richfitz/iterate&quot;</span>, <span class="st">&quot;0.0.1&quot;</span>)</a>
-<a class="sourceLine" id="cb142-2" title="2">img<span class="op">$</span><span class="kw">reload</span>()</a>
-<a class="sourceLine" id="cb142-3" title="3">img<span class="op">$</span><span class="kw">tags</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;richfitz/iterate:0.0.1&quot;  &quot;richfitz/iterate:latest&quot;</code></pre>
+
+<pre><code class="r">img$tag(&quot;richfitz/iterate&quot;, &quot;0.0.1&quot;)
+img$reload()
+img$tags()
+</code></pre>
+
+<pre><code>## [1] &quot;richfitz/iterate:0.0.1&quot;  &quot;richfitz/iterate:latest&quot;
+</code></pre>
+
 <p>While the <code>$untag()</code> method will remove a tag</p>
-<div class="sourceCode" id="cb144"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb144-1" title="1">img<span class="op">$</span><span class="kw">untag</span>(<span class="st">&quot;richfitz/iterate:0.0.1&quot;</span>)</a></code></pre></div>
-<p>The <code>$remove()</code> method will remove an image - this returns a data.frame indicating what actually happened (images are only actually deleted if there are no other tags pointing at an image <em>and</em> if <code>noprune</code> is not <code>TRUE</code>.</p>
-<div class="sourceCode" id="cb145"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb145-1" title="1">img<span class="op">$</span><span class="kw">remove</span>()</a></code></pre></div>
+
+<pre><code class="r">img$untag(&quot;richfitz/iterate:0.0.1&quot;)
+</code></pre>
+
+<p>The <code>$remove()</code> method will remove an image - this returns a
+data.frame indicating what actually happened (images are only
+actually deleted if there are no other tags pointing at an image
+<em>and</em> if <code>noprune</code> is not <code>TRUE</code>.</p>
+
+<pre><code class="r">img$remove()
+</code></pre>
+
 <pre><code>##                  untagged
 ## 1 richfitz/iterate:latest
 ## 2                    &lt;NA&gt;
@@ -1887,39 +2296,68 @@ echo &quot;Done!&quot;</code></pre>
 ## 6                    &lt;NA&gt;
 ##                                                                   deleted
 ## 1                                                                    &lt;NA&gt;
-## 2 sha256:c8b1e1f480aa55628d1b9455b25d35ee4e25c13c565bf10e5c5feaa90600444c
-## 3 sha256:e57263fa5be875e92be1020c0844dd53ddd73a9a12263d82d7a4d9cd530e6c62
-## 4 sha256:a439e13dd8709134a2db6a76c441f2fa9055565a2fc4165d7989cc17a1a2b9db
-## 5 sha256:edd3344b049f978c480142e7d2fcbcc4160d221b1464ac5ea911ed4a22ccb01b
-## 6 sha256:eea0512d51354fe7a6c6fd0ee5c9907fecb0660342db09afeeb06a3aa4c9ae00</code></pre>
-</div>
-</div>
-<div id="volumes" class="section level2">
+## 2 sha256:244154bfbb9995fc3c5fede726ec4c2679ba393375f2a8130ffd8537dcce3285
+## 3 sha256:346745e9ebc8af6b623cdf5729ceddfd215e33d7886a7e72e71beba46d9bceca
+## 4 sha256:d5b6a0eaa685450861afb86bc00f05762bba84284ad2b36b252893f4c0972bb4
+## 5 sha256:bfead14674a0cf29a4cb48ee5b11d006b7451ddd098086bc3866ded70821cd8d
+## 6 sha256:ce1557b8602d2427fb71296d2c6ab9b05103d830cdf2eb5d45cdfe25c3ed11dd
+</code></pre>
+
 <h2>Volumes</h2>
-<p>Docker volumes provide a useful abstraction for interacting with (possibly persistent) file volumes across containers. To create a volume using <code>stevedore</code> (equivalent to <code>docker volume create</code>) use <code>$volume$create()</code>:</p>
-<div class="sourceCode" id="cb147"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb147-1" title="1">vol &lt;-<span class="st"> </span>docker<span class="op">$</span>volume<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;myvolume&quot;</span>)</a></code></pre></div>
+
+<p>Docker volumes provide a useful abstraction for interacting with
+(possibly persistent) file volumes across containers.  To create a
+volume using <code>stevedore</code> (equivalent to <code>docker volume create</code>) use
+<code>$volume$create()</code>:</p>
+
+<pre><code class="r">vol &lt;- docker$volume$create(&quot;myvolume&quot;)
+</code></pre>
+
 <p>Volumes can be listed:</p>
-<div class="sourceCode" id="cb148"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb148-1" title="1">docker<span class="op">$</span>volume<span class="op">$</span><span class="kw">list</span>()</a></code></pre></div>
-<pre><code>##       name driver                             mountpoint
-## 1 myvolume  local /var/lib/docker/volumes/myvolume/_data
+
+<pre><code class="r">docker$volume$list()
+</code></pre>
+
+<pre><code>##                                                               name driver
+## 1                                                         myvolume  local
+## 2 dc5d8f843c0fefd3e0c6a729e7326fe262c94aa50a49065448d7ef664c53a285  local
+##                                                                                       mountpoint
+## 1                                                         /var/lib/docker/volumes/myvolume/_data
+## 2 /var/lib/docker/volumes/dc5d8f843c0fefd3e0c6a729e7326fe262c94aa50a49065448d7ef664c53a285/_data
 ##             created_at status labels scope options usage_data
-## 1 2018-11-08T09:58:22Z               local             NA, NA</code></pre>
-<div id="working-with-volume-objects" class="section level3">
+## 1 2020-01-12T10:05:47Z               local             NA, NA
+## 2 2019-12-23T08:27:51Z               local             NA, NA
+</code></pre>
+
 <h3>Working with volume objects</h3>
-<p>There’s very little that can be done with volume objects:</p>
-<div class="sourceCode" id="cb150"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb150-1" title="1">vol</a></code></pre></div>
+
+<p>There&#39;s very little that can be done with volume objects:</p>
+
+<pre><code class="r">vol
+</code></pre>
+
 <pre><code>## &lt;docker_volume&gt;
 ##   help(help_type = getOption(&quot;help_type&quot;))
 ##   inspect(reload = TRUE)
 ##   map(path, readonly = FALSE)
 ##   name()
 ##   reload()
-##   remove(force = NULL)</code></pre>
+##   remove(force = NULL)
+</code></pre>
+
 <p>We can get the name:</p>
-<div class="sourceCode" id="cb152"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb152-1" title="1">vol<span class="op">$</span><span class="kw">name</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;myvolume&quot;</code></pre>
+
+<pre><code class="r">vol$name()
+</code></pre>
+
+<pre><code>## [1] &quot;myvolume&quot;
+</code></pre>
+
 <p>Inspect the metadata</p>
-<div class="sourceCode" id="cb154"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb154-1" title="1">vol<span class="op">$</span><span class="kw">inspect</span>()</a></code></pre></div>
+
+<pre><code class="r">vol$inspect()
+</code></pre>
+
 <pre><code>## $name
 ## [1] &quot;myvolume&quot;
 ##
@@ -1930,7 +2368,7 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] &quot;/var/lib/docker/volumes/myvolume/_data&quot;
 ##
 ## $created_at
-## [1] &quot;2018-11-08T09:58:22Z&quot;
+## [1] &quot;2020-01-12T10:05:47Z&quot;
 ##
 ## $status
 ## NULL
@@ -1945,71 +2383,122 @@ echo &quot;Done!&quot;</code></pre>
 ## NULL
 ##
 ## $usage_data
-## NULL</code></pre>
+## NULL
+</code></pre>
+
 <p>Generate mount definitions:</p>
-<div class="sourceCode" id="cb156"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb156-1" title="1">vol<span class="op">$</span><span class="kw">map</span>(<span class="st">&quot;/comtainer/path&quot;</span>)</a></code></pre></div>
-<pre><code>## [1] &quot;myvolume:/comtainer/path&quot;</code></pre>
+
+<pre><code class="r">vol$map(&quot;/comtainer/path&quot;)
+</code></pre>
+
+<pre><code>## [1] &quot;myvolume:/comtainer/path&quot;
+</code></pre>
+
 <p>and can remove the volume</p>
-<div class="sourceCode" id="cb158"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb158-1" title="1">vol<span class="op">$</span><span class="kw">remove</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
+
+<pre><code class="r">vol$remove()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
 <p>everything else comes from using volumes with containers.</p>
-<p>Containers are mounted the same way as from the docker command line - with a string in the form <code>&lt;host&gt;:&lt;container&gt;</code>. Here we can use the volume name on the host side, so saying <code>&lt;myvolume&gt;:/myvolume</code> mounts our volume at <code>/myvolume</code> within the container. This can be done easily with the <code>$map()</code> method.</p>
-<div class="sourceCode" id="cb160"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb160-1" title="1">vol &lt;-<span class="st"> </span>docker<span class="op">$</span>volume<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;myvolume&quot;</span>)</a>
-<a class="sourceLine" id="cb160-2" title="2">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(</a>
-<a class="sourceLine" id="cb160-3" title="3">  <span class="st">&quot;alpine:latest&quot;</span>,</a>
-<a class="sourceLine" id="cb160-4" title="4">  <span class="kw">c</span>(<span class="st">&quot;sh&quot;</span>, <span class="st">&quot;-c&quot;</span>, <span class="st">&quot;echo hello world &gt; /myvolume/output&quot;</span>),</a>
-<a class="sourceLine" id="cb160-5" title="5">  <span class="dt">volumes =</span> vol<span class="op">$</span><span class="kw">map</span>(<span class="st">&quot;/myvolume&quot;</span>),</a>
-<a class="sourceLine" id="cb160-6" title="6">  <span class="dt">rm =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+
+<p>Containers are mounted the same way as from the docker command line</p>
+
+<ul>
+<li>with a string in the form <code>&lt;host&gt;:&lt;container&gt;</code>.  Here we can use
+the volume name on the host side, so saying <code>&lt;myvolume&gt;:/myvolume</code>
+mounts our volume at <code>/myvolume</code> within the container.  This can be
+done easily with the <code>$map()</code> method.</li>
+</ul>
+
+<pre><code class="r">vol &lt;- docker$volume$create(&quot;myvolume&quot;)
+docker$container$run(
+  &quot;alpine:latest&quot;,
+  c(&quot;sh&quot;, &quot;-c&quot;, &quot;echo hello world &gt; /myvolume/output&quot;),
+  volumes = vol$map(&quot;/myvolume&quot;),
+  rm = TRUE)
+</code></pre>
+
 <pre><code>## &lt;docker_run_output&gt;
 ##   $container:
 ##     &lt;docker_container&gt;
-##       id: aa80a57c5f9660244251a938d568dbb908e557d885bf7904f5055c5617972b7d
-##       name: zen_lalande
+##       id: 946dbe3f449dd8433847f1517af6106385ff1d31ed755f671ee10a732e31ac65
+##       name: determined_easley
 ##
 ##   $logs:
-##</code></pre>
-<p>(We use <code>sh -c</code> here so that the redirect operates within the container - the third argument is evaluated by the shell within the container and redirects the value that is echoed to a file.)</p>
-<p>We can see the result of this by using a second container to read the file:</p>
-<div class="sourceCode" id="cb162"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb162-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(</a>
-<a class="sourceLine" id="cb162-2" title="2">  <span class="st">&quot;alpine:latest&quot;</span>,</a>
-<a class="sourceLine" id="cb162-3" title="3">  <span class="kw">c</span>(<span class="st">&quot;cat&quot;</span>, <span class="st">&quot;/myvolume/output&quot;</span>),</a>
-<a class="sourceLine" id="cb162-4" title="4">  <span class="dt">volumes =</span> vol<span class="op">$</span><span class="kw">map</span>(<span class="st">&quot;/myvolume&quot;</span>),</a>
-<a class="sourceLine" id="cb162-5" title="5">  <span class="dt">rm =</span> <span class="ot">TRUE</span>)<span class="op">$</span>logs</a></code></pre></div>
-<pre><code>## O&gt; hello world</code></pre>
-<pre><code>## O&gt; hello world</code></pre>
-</div>
-</div>
-<div id="networks" class="section level2">
+##
+</code></pre>
+
+<p>(We use <code>sh -c</code> here so that the redirect operates within the
+container - the third argument is evaluated by the shell within the
+container and redirects the value that is echoed to a file.)</p>
+
+<p>We can see the result of this by using a second container to read
+the file:</p>
+
+<pre><code class="r">docker$container$run(
+  &quot;alpine:latest&quot;,
+  c(&quot;cat&quot;, &quot;/myvolume/output&quot;),
+  volumes = vol$map(&quot;/myvolume&quot;),
+  rm = TRUE)$logs
+</code></pre>
+
+<pre><code>## O&gt; hello world
+</code></pre>
+
+<pre><code>## O&gt; hello world
+</code></pre>
+
 <h2>Networks</h2>
-<p>Docker “networks” make it easy to get containers communicating with each other without exposing ports to the host. To achive this, one creates a docker network, then create containers attached to that network (containers can also be attached to networks after creation).</p>
-<div class="sourceCode" id="cb165"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb165-1" title="1">nw &lt;-<span class="st"> </span>docker<span class="op">$</span>network<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;mynetwork&quot;</span>)</a></code></pre></div>
+
+<p>Docker &ldquo;networks&rdquo; make it easy to get containers communicating with
+each other without exposing ports to the host.  To achive this, one
+creates a docker network, then create containers attached to that
+network (containers can also be attached to networks after
+creation).</p>
+
+<pre><code class="r">nw &lt;- docker$network$create(&quot;mynetwork&quot;)
+</code></pre>
+
 <p>Networks can be listed:</p>
-<div class="sourceCode" id="cb166"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb166-1" title="1">docker<span class="op">$</span>network<span class="op">$</span><span class="kw">list</span>()</a></code></pre></div>
+
+<pre><code class="r">docker$network$list()
+</code></pre>
+
 <pre><code>##        name
 ## 1      host
-## 2      none
-## 3    bridge
-## 4 mynetwork
+## 2 mynetwork
+## 3      none
+## 4    bridge
 ##                                                                 id
-## 1 2f80d37c9c534b35f1dfff0896f5391243432ad720dc6df371279dfb78fea0a3
-## 2 9bad2ae5c810c2d3fb9e2c73db5b733338189010b3e19803003051758a3962ba
-## 3 8bc1cc7ddc2eb36bcb0856854799a26b41549f16ab0ad9b643a632ba146a4b87
-## 4 d45cd1c0ff89eb9c74d89a0cad12929a27592f834dd581f2b9cf162d1fa4433b
+## 1 d5a076bd27b8f3a0963da06b5c149e6e7ab63ebe5649e124fdf8a22602b215c2
+## 2 05492a54216e3b100caa82959b714897dd10dd0292ae82f730328c2d6d29b1bb
+## 3 80bf98ad0e7fac320903a891936aa9680462769b37168e38b483c7ff9612bb2c
+## 4 8b98e06edb0adb42f306a3d86d2f4f3d62b7a9d15279d7c44d37908c120df1ac
 ##                          created scope driver enable_ipv6         ipam
-## 1           0001-01-01T00:00:00Z local   host       FALSE default,....
-## 2           0001-01-01T00:00:00Z local   null       FALSE default,....
-## 3 2018-11-07T18:08:07.300707148Z local bridge       FALSE default,....
-## 4   2018-11-08T09:58:25.1723547Z local bridge       FALSE default,....
+## 1 2019-03-09T11:06:26.652857909Z local   host       FALSE default,....
+## 2   2020-01-12T10:05:50.1991445Z local bridge       FALSE default,....
+## 3 2019-03-09T11:06:26.606552055Z local   null       FALSE default,....
+## 4 2020-01-10T06:57:36.297181373Z local bridge       FALSE default,....
 ##   internal attachable ingress containers      options labels
 ## 1    FALSE      FALSE   FALSE
 ## 2    FALSE      FALSE   FALSE
-## 3    FALSE      FALSE   FALSE            true, tr....
-## 4    FALSE      FALSE   FALSE</code></pre>
-<p>The networks <code>bridge</code>, <code>host</code> and <code>none</code> always exist - they are special to docker.</p>
-<div id="working-with-network-objects" class="section level3">
+## 3    FALSE      FALSE   FALSE
+## 4    FALSE      FALSE   FALSE            true, tr....
+</code></pre>
+
+<p>The networks <code>bridge</code>, <code>host</code> and <code>none</code> always exist - they are
+special to docker.</p>
+
 <h3>Working with network objects</h3>
+
 <p>Like volume objects, network objects do very little themselves:</p>
-<div class="sourceCode" id="cb168"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb168-1" title="1">nw</a></code></pre></div>
+
+<pre><code class="r">nw
+</code></pre>
+
 <pre><code>## &lt;docker_network&gt;
 ##   connect(container = NULL, endpoint_config = NULL)
 ##   containers(reload = TRUE)
@@ -2019,22 +2508,36 @@ echo &quot;Done!&quot;</code></pre>
 ##   inspect(reload = TRUE)
 ##   name(reload = TRUE)
 ##   reload()
-##   remove()</code></pre>
+##   remove()
+</code></pre>
+
 <p>The <code>$name()</code> and <code>$id()</code> methods get the name and id of the network</p>
-<div class="sourceCode" id="cb170"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb170-1" title="1">nw<span class="op">$</span><span class="kw">name</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;mynetwork&quot;</code></pre>
-<div class="sourceCode" id="cb172"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb172-1" title="1">nw<span class="op">$</span><span class="kw">id</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;d45cd1c0ff89eb9c74d89a0cad12929a27592f834dd581f2b9cf162d1fa4433b&quot;</code></pre>
+
+<pre><code class="r">nw$name()
+</code></pre>
+
+<pre><code>## [1] &quot;mynetwork&quot;
+</code></pre>
+
+<pre><code class="r">nw$id()
+</code></pre>
+
+<pre><code>## [1] &quot;05492a54216e3b100caa82959b714897dd10dd0292ae82f730328c2d6d29b1bb&quot;
+</code></pre>
+
 <p><code>$inspect()</code> gets detailed metadata</p>
-<div class="sourceCode" id="cb174"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb174-1" title="1">nw<span class="op">$</span><span class="kw">inspect</span>()</a></code></pre></div>
+
+<pre><code class="r">nw$inspect()
+</code></pre>
+
 <pre><code>## $name
 ## [1] &quot;mynetwork&quot;
 ##
 ## $id
-## [1] &quot;d45cd1c0ff89eb9c74d89a0cad12929a27592f834dd581f2b9cf162d1fa4433b&quot;
+## [1] &quot;05492a54216e3b100caa82959b714897dd10dd0292ae82f730328c2d6d29b1bb&quot;
 ##
 ## $created
-## [1] &quot;2018-11-08T09:58:25.1723547Z&quot;
+## [1] &quot;2020-01-12T10:05:50.1991445Z&quot;
 ##
 ## $scope
 ## [1] &quot;local&quot;
@@ -2075,55 +2578,97 @@ echo &quot;Done!&quot;</code></pre>
 ## character(0)
 ##
 ## $labels
-## character(0)</code></pre>
-<p><code>$containers()</code> lists containers attached to the network (currently an empty list - this network has no attached containers)</p>
-<div class="sourceCode" id="cb176"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb176-1" title="1">nw<span class="op">$</span><span class="kw">containers</span>()</a></code></pre></div>
-<pre><code>## list()</code></pre>
+## character(0)
+</code></pre>
+
+<p><code>$containers()</code> lists containers attached to the network (currently
+an empty list - this network has no attached containers)</p>
+
+<pre><code class="r">nw$containers()
+</code></pre>
+
+<pre><code>## list()
+</code></pre>
+
 <p><code>$remove()</code> removes the network</p>
-<div class="sourceCode" id="cb178"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb178-1" title="1">nw<span class="op">$</span><span class="kw">remove</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<p>Generally you’ll want to put containers onto a network.</p>
-<p>The setup here is to create a network, and then use the <code>network</code> argument to <code>$container$run()</code> to attach a container to that network. Once established, containers on the same network can use another docker container’s name as the hostname and communicate!</p>
-<div class="sourceCode" id="cb180"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb180-1" title="1">nw &lt;-<span class="st"> </span>docker<span class="op">$</span>network<span class="op">$</span><span class="kw">create</span>(<span class="st">&quot;mynetwork&quot;</span>)</a>
-<a class="sourceLine" id="cb180-2" title="2">server &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;nginx&quot;</span>, <span class="dt">network =</span> nw, <span class="dt">name =</span> <span class="st">&quot;server&quot;</span>,</a>
-<a class="sourceLine" id="cb180-3" title="3">                               <span class="dt">detach =</span> <span class="ot">TRUE</span>, <span class="dt">rm =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb180-4" title="4">server<span class="op">$</span><span class="kw">status</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;running&quot;</code></pre>
-<p>Now we can attach other networks to this container and communicate with the server:</p>
-<div class="sourceCode" id="cb182"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb182-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;alpine:latest&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;ping&quot;</span>, <span class="st">&quot;server&quot;</span>, <span class="st">&quot;-c&quot;</span>, <span class="st">&quot;3&quot;</span>),</a>
-<a class="sourceLine" id="cb182-2" title="2">                     <span class="dt">network =</span> nw, <span class="dt">stream =</span> <span class="kw">stdout</span>(), <span class="dt">rm =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
-<pre><code>## O&gt; PING server (172.18.0.2): 56 data bytes
-## O&gt; 64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.085 ms
-## O&gt; 64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.153 ms
-## O&gt; 64 bytes from 172.18.0.2: seq=2 ttl=64 time=0.153 ms
+
+<pre><code class="r">nw$remove()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<p>Generally you&#39;ll want to put containers onto a network.</p>
+
+<p>The setup here is to create a network, and then use the <code>network</code>
+argument to <code>$container$run()</code> to attach a container to that
+network.  Once established, containers on the same network can use
+another docker container&#39;s name as the hostname and communicate!</p>
+
+<pre><code class="r">nw &lt;- docker$network$create(&quot;mynetwork&quot;)
+server &lt;- docker$container$run(&quot;nginx&quot;, network = nw, name = &quot;server&quot;,
+                               detach = TRUE, rm = TRUE)
+server$status()
+</code></pre>
+
+<pre><code>## [1] &quot;running&quot;
+</code></pre>
+
+<p>Now we can attach other networks to this container and communicate
+with the server:</p>
+
+<pre><code class="r">docker$container$run(&quot;alpine:latest&quot;, c(&quot;ping&quot;, &quot;server&quot;, &quot;-c&quot;, &quot;3&quot;),
+                     network = nw, stream = stdout(), rm = TRUE)
+</code></pre>
+
+<pre><code>## O&gt; PING server (172.19.0.2): 56 data bytes
+## O&gt; 64 bytes from 172.19.0.2: seq=0 ttl=64 time=0.099 ms
+## O&gt; 64 bytes from 172.19.0.2: seq=1 ttl=64 time=0.208 ms
+## O&gt; 64 bytes from 172.19.0.2: seq=2 ttl=64 time=0.228 ms
 ## O&gt;
 ## O&gt; --- server ping statistics ---
 ## O&gt; 3 packets transmitted, 3 packets received, 0% packet loss
-## O&gt; round-trip min/avg/max = 0.085/0.130/0.153 ms</code></pre>
+## O&gt; round-trip min/avg/max = 0.099/0.178/0.228 ms
+</code></pre>
+
 <pre><code>## &lt;docker_run_output&gt;
 ##   $container:
 ##     &lt;docker_container&gt;
-##       id: 4f8c4d88d98e033c25f002007d9b9d5b0118c19ffb281c9aab36eec61fa8bc5c
-##       name: elastic_edison
+##       id: 36ee5c4501190e86eac95a52284cbfd69a22fe74d95088773f41627e3dc57c93
+##       name: agitated_pasteur
 ##
 ##   $logs:
-##     O&gt; PING server (172.18.0.2): 56 data bytes
-##     O&gt; 64 bytes from 172.18.0.2: seq=0 ttl=64 time=0.085 ms
-##     O&gt; 64 bytes from 172.18.0.2: seq=1 ttl=64 time=0.153 ms
-##     O&gt; 64 bytes from 172.18.0.2: seq=2 ttl=64 time=0.153 ms
+##     O&gt; PING server (172.19.0.2): 56 data bytes
+##     O&gt; 64 bytes from 172.19.0.2: seq=0 ttl=64 time=0.099 ms
+##     O&gt; 64 bytes from 172.19.0.2: seq=1 ttl=64 time=0.208 ms
+##     O&gt; 64 bytes from 172.19.0.2: seq=2 ttl=64 time=0.228 ms
 ##     O&gt;
 ##     O&gt; --- server ping statistics ---
 ##     O&gt; 3 packets transmitted, 3 packets received, 0% packet loss
-##     O&gt; round-trip min/avg/max = 0.085/0.130/0.153 ms</code></pre>
-<p>Omitting the <code>network</code> argument, the second container can’t find the server:</p>
-<div class="sourceCode" id="cb185"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb185-1" title="1">docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;alpine:latest&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;ping&quot;</span>, <span class="st">&quot;server&quot;</span>, <span class="st">&quot;-c&quot;</span>, <span class="st">&quot;3&quot;</span>),</a>
-<a class="sourceLine" id="cb185-2" title="2">                     <span class="dt">stream =</span> <span class="kw">stdout</span>(), <span class="dt">rm =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
-<pre><code>## E&gt; ping: bad address &#39;server&#39;</code></pre>
+##     O&gt; round-trip min/avg/max = 0.099/0.178/0.228 ms
+</code></pre>
+
+<p>Omitting the <code>network</code> argument, the second container can&#39;t find
+the server:</p>
+
+<pre><code class="r">docker$container$run(&quot;alpine:latest&quot;, c(&quot;ping&quot;, &quot;server&quot;, &quot;-c&quot;, &quot;3&quot;),
+                     stream = stdout(), rm = TRUE)
+</code></pre>
+
+<pre><code>## E&gt; ping: bad address &#39;server&#39;
+</code></pre>
+
 <pre><code>## Error: Command &#39;ping server -c 3&#39; in image &#39;alpine:latest&#39; returned non-zero exit status 1
-## ping: bad address &#39;server&#39;</code></pre>
-<p>The server container exposes a webserver on port 80. For containers on the network we can access this port:</p>
-<div class="sourceCode" id="cb188"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb188-1" title="1">res &lt;-<span class="st"> </span>docker<span class="op">$</span>container<span class="op">$</span><span class="kw">run</span>(<span class="st">&quot;richfitz/curl&quot;</span>, <span class="kw">c</span>(<span class="st">&quot;curl&quot;</span>, <span class="st">&quot;-s&quot;</span>, <span class="st">&quot;http://server&quot;</span>),</a>
-<a class="sourceLine" id="cb188-2" title="2">                            <span class="dt">network =</span> nw, <span class="dt">rm =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+## ping: bad address &#39;server&#39;
+</code></pre>
+
+<p>The server container exposes a webserver on port 80.  For
+containers on the network we can access this port:</p>
+
+<pre><code class="r">res &lt;- docker$container$run(&quot;richfitz/curl&quot;, c(&quot;curl&quot;, &quot;-s&quot;, &quot;http://server&quot;),
+                            network = nw, rm = TRUE)
+</code></pre>
+
 <pre><code>## O&gt; &lt;!DOCTYPE html&gt;
 ## O&gt; &lt;html&gt;
 ## O&gt; &lt;head&gt;
@@ -2148,8 +2693,12 @@ echo &quot;Done!&quot;</code></pre>
 ## O&gt;
 ## O&gt; &lt;p&gt;&lt;em&gt;Thank you for using nginx.&lt;/em&gt;&lt;/p&gt;
 ## O&gt; &lt;/body&gt;
-## O&gt; &lt;/html&gt;</code></pre>
-<div class="sourceCode" id="cb190"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb190-1" title="1"><span class="kw">head</span>(res<span class="op">$</span>logs, <span class="dv">10</span>)</a></code></pre></div>
+## O&gt; &lt;/html&gt;
+</code></pre>
+
+<pre><code class="r">head(res$logs, 10)
+</code></pre>
+
 <pre><code>##  [1] &quot;&lt;!DOCTYPE html&gt;\n&quot;
 ##  [2] &quot;&lt;html&gt;\n&quot;
 ##  [3] &quot;&lt;head&gt;\n&quot;
@@ -2159,51 +2708,80 @@ echo &quot;Done!&quot;</code></pre>
 ##  [7] &quot;        width: 35em;\n&quot;
 ##  [8] &quot;        margin: 0 auto;\n&quot;
 ##  [9] &quot;        font-family: Tahoma, Verdana, Arial, sans-serif;\n&quot;
-## [10] &quot;    }\n&quot;</code></pre>
-<div class="sourceCode" id="cb192"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb192-1" title="1">server<span class="op">$</span><span class="kw">stop</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-<div class="sourceCode" id="cb194"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb194-1" title="1">nw<span class="op">$</span><span class="kw">remove</span>()</a></code></pre></div>
-<pre><code>## NULL</code></pre>
-</div>
-</div>
-<div id="other-docker-functions" class="section level2">
+## [10] &quot;    }\n&quot;
+</code></pre>
+
+<pre><code class="r">server$stop()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
+<pre><code class="r">nw$remove()
+</code></pre>
+
+<pre><code>## NULL
+</code></pre>
+
 <h2>Other docker functions</h2>
-<p>There are a few functions at the top level of the <code>docker_client</code> object:</p>
-<p><code>$ping()</code> tests the connection to the server and reports the API version for the server - this is a (for docker) very fast function to use to test that things seem to be working.</p>
-<div class="sourceCode" id="cb196"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb196-1" title="1">docker<span class="op">$</span><span class="kw">ping</span>()</a></code></pre></div>
+
+<p>There are a few functions at the top level of the <code>docker_client</code>
+object:</p>
+
+<p><code>$ping()</code> tests the connection to the server and reports the API
+version for the server - this is a (for docker) very fast function
+to use to test that things seem to be working.</p>
+
+<pre><code class="r">docker$ping()
+</code></pre>
+
 <pre><code>## [1] &quot;OK&quot;
 ## attr(,&quot;api_version&quot;)
-## [1] &quot;1.37&quot;
+## [1] &quot;1.39&quot;
+## attr(,&quot;buildkit_version&quot;)
+## [1] NA
 ## attr(,&quot;docker_experimental&quot;)
-## [1] TRUE</code></pre>
-<p><code>$api_version()</code> reports the API version that the <em>client</em> is using (this can be varied from 1.25 to 1.37)</p>
-<div class="sourceCode" id="cb198"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb198-1" title="1">docker<span class="op">$</span><span class="kw">api_version</span>()</a></code></pre></div>
-<pre><code>## [1] &quot;1.37&quot;</code></pre>
+## [1] FALSE
+</code></pre>
+
+<p><code>$api_version()</code> reports the API version that the <em>client</em> is using
+(this can be varied from 1.25 to
+1.39)</p>
+
+<pre><code class="r">docker$api_version()
+</code></pre>
+
+<pre><code>## [1] &quot;1.39&quot;
+</code></pre>
+
 <p><code>$version()</code> reports detailed version information from the server:</p>
-<div class="sourceCode" id="cb200"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb200-1" title="1">docker<span class="op">$</span><span class="kw">version</span>()</a></code></pre></div>
+
+<pre><code class="r">docker$version()
+</code></pre>
+
 <pre><code>## $platform
 ## $platform$name
-## [1] &quot;&quot;
+## [1] &quot;Docker Engine - Community&quot;
 ##
 ##
 ## $components
-##     name    version      details
-## 1 Engine 18.05.0-ce 1.37, am....
+##     name version      details
+## 1 Engine 18.09.2 1.39, am....
 ##
 ## $version
-## [1] &quot;18.05.0-ce&quot;
+## [1] &quot;18.09.2&quot;
 ##
 ## $api_version
-## [1] &quot;1.37&quot;
+## [1] &quot;1.39&quot;
 ##
 ## $min_api_version
 ## [1] &quot;1.12&quot;
 ##
 ## $git_commit
-## [1] &quot;f150324&quot;
+## [1] &quot;6247962&quot;
 ##
 ## $go_version
-## [1] &quot;go1.10.1&quot;
+## [1] &quot;go1.10.6&quot;
 ##
 ## $os
 ## [1] &quot;linux&quot;
@@ -2212,17 +2790,24 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] &quot;amd64&quot;
 ##
 ## $kernel_version
-## [1] &quot;4.9.93-linuxkit-aufs&quot;
+## [1] &quot;4.9.125-linuxkit&quot;
 ##
 ## $experimental
-## [1] TRUE
+## [1] NA
 ##
 ## $build_time
-## [1] &quot;2018-05-09T22:20:16.000000000+00:00&quot;</code></pre>
-<p><code>$info()</code> reports a bunch of other information about the state of the server (Docker describes this as “get system information” in its documentation) - this is equivalent to running <code>docker info</code></p>
-<div class="sourceCode" id="cb202"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb202-1" title="1">docker<span class="op">$</span><span class="kw">info</span>()</a></code></pre></div>
+## [1] &quot;2019-02-10T04:13:06.000000000+00:00&quot;
+</code></pre>
+
+<p><code>$info()</code> reports a bunch of other information about the state of
+the server (Docker describes this as &ldquo;get system information&rdquo; in
+its documentation) - this is equivalent to running <code>docker info</code></p>
+
+<pre><code class="r">docker$info()
+</code></pre>
+
 <pre><code>## $id
-## [1] &quot;6EZD:2CUP:YGOU:4AYR:ULBJ:ROVP:YEF3:ZE3F:EN5G:TXBB:T7IF:KUC4&quot;
+## [1] &quot;54B2:VUDF:CFVG:KTXY:5ZI6:S7NK:LQNM:7CFA:X6TH:5PRV:SUFC:ZDK4&quot;
 ##
 ## $containers
 ## [1] 0
@@ -2237,7 +2822,7 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] 0
 ##
 ## $images
-## [1] 21
+## [1] 73
 ##
 ## $driver
 ## [1] &quot;overlay2&quot;
@@ -2264,14 +2849,14 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] &quot;local&quot;
 ##
 ## $plugins$network
-## [1] &quot;bridge&quot;  &quot;host&quot;    &quot;ipvlan&quot;  &quot;macvlan&quot; &quot;null&quot;    &quot;overlay&quot;
+## [1] &quot;bridge&quot;  &quot;host&quot;    &quot;macvlan&quot; &quot;null&quot;    &quot;overlay&quot;
 ##
 ## $plugins$authorization
 ## character(0)
 ##
 ## $plugins$log
-## [1] &quot;awslogs&quot;    &quot;fluentd&quot;    &quot;gcplogs&quot;    &quot;gelf&quot;       &quot;journald&quot;
-## [6] &quot;json-file&quot;  &quot;logentries&quot; &quot;splunk&quot;     &quot;syslog&quot;
+##  [1] &quot;awslogs&quot;    &quot;fluentd&quot;    &quot;gcplogs&quot;    &quot;gelf&quot;       &quot;journald&quot;
+##  [6] &quot;json-file&quot;  &quot;local&quot;      &quot;logentries&quot; &quot;splunk&quot;     &quot;syslog&quot;
 ##
 ##
 ## $memory_limit
@@ -2311,13 +2896,13 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] TRUE
 ##
 ## $n_fd
-## [1] 25
+## [1] 26
 ##
 ## $n_goroutines
-## [1] 42
+## [1] 53
 ##
 ## $system_time
-## [1] &quot;2018-11-08T09:58:32.3205267Z&quot;
+## [1] &quot;2020-01-12T10:06:01.1253405Z&quot;
 ##
 ## $logging_driver
 ## [1] &quot;json-file&quot;
@@ -2329,7 +2914,7 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] 2
 ##
 ## $kernel_version
-## [1] &quot;4.9.93-linuxkit-aufs&quot;
+## [1] &quot;4.9.125-linuxkit&quot;
 ##
 ## $operating_system
 ## [1] &quot;Docker for Mac&quot;
@@ -2344,7 +2929,7 @@ echo &quot;Done!&quot;</code></pre>
 ## [1] 2
 ##
 ## $mem_total
-## [1] 2096058368
+## [1] 2096164864
 ##
 ## $index_server_address
 ## [1] &quot;https://index.docker.io/v1/&quot;
@@ -2399,10 +2984,10 @@ echo &quot;Done!&quot;</code></pre>
 ## character(0)
 ##
 ## $experimental_build
-## [1] TRUE
+## [1] FALSE
 ##
 ## $server_version
-## [1] &quot;18.05.0-ce&quot;
+## [1] &quot;18.09.2&quot;
 ##
 ## $cluster_store
 ## [1] &quot;&quot;
@@ -2413,7 +2998,7 @@ echo &quot;Done!&quot;</code></pre>
 ## $runtimes
 ## $runtimes$runc
 ## $runtimes$runc$path
-## [1] &quot;docker-runc&quot;
+## [1] &quot;runc&quot;
 ##
 ## $runtimes$runc$runtime_args
 ## character(0)
@@ -2464,44 +3049,41 @@ echo &quot;Done!&quot;</code></pre>
 ##
 ## $containerd_commit
 ## $containerd_commit$id
-## [1] &quot;773c489c9c1b21a6d78b5c538cd395416ec50f88&quot;
+## [1] &quot;9754871865f7fe2f4e74d43e2fc7ccd237edcbce&quot;
 ##
 ## $containerd_commit$expected
-## [1] &quot;773c489c9c1b21a6d78b5c538cd395416ec50f88&quot;
+## [1] &quot;9754871865f7fe2f4e74d43e2fc7ccd237edcbce&quot;
 ##
 ##
 ## $runc_commit
 ## $runc_commit$id
-## [1] &quot;4fc53a81fb7c994640722ac585fa9ca548971871&quot;
+## [1] &quot;09c8266bf2fcf9519a651b04ae54c967b9ab86ec&quot;
 ##
 ## $runc_commit$expected
-## [1] &quot;4fc53a81fb7c994640722ac585fa9ca548971871&quot;
+## [1] &quot;09c8266bf2fcf9519a651b04ae54c967b9ab86ec&quot;
 ##
 ##
 ## $init_commit
 ## $init_commit$id
-## [1] &quot;949e6fa&quot;
+## [1] &quot;fec3683&quot;
 ##
 ## $init_commit$expected
-## [1] &quot;949e6fa&quot;
+## [1] &quot;fec3683&quot;
 ##
 ##
 ## $security_options
-## [1] &quot;name=seccomp,profile=default&quot;</code></pre>
-<p>Finally, <code>$df()</code> will return information about resource and data usage by docker - all containers, networks, volumes, etc.</p>
-</div>
+## [1] &quot;name=seccomp,profile=default&quot;
+##
+## $product_license
+## [1] &quot;Community Engine&quot;
+##
+## $warnings
+## character(0)
+</code></pre>
 
-
-
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
+<p>Finally, <code>$df()</code> will return information about resource and data
+usage by docker - all containers, networks, volumes, etc.</p>
 
 </body>
+
 </html>
